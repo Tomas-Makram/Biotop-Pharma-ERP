@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Backup Files
+backups/
+db_backups/
+
+# IDE
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# Secrets
+.env
+.env.*
+config.local.json
+
+# Uploaded Files
+uploads/
+media/
+
+# Cloudinary
+cloudinary_config.py
+
+# Tests Cache
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Temporary
+temp/
+tmp/
+
+# Generated Reports
+reports/
+exports/

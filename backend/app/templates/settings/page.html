@@ -1,0 +1,557 @@
+{% extends "base.html" %}
+
+{% block title %}الإعدادات{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12">
+    <div class="card p-4">
+      <h1 class="h4">إعدادات الشركة</h1>
+      <form class="row g-3" method="post" action="/settings/save">
+        <div class="col-12 col-md-4">
+          <label class="form-label">اسم الشركة</label>
+          <input name="company_name" class="form-control" value="{{ settings.company_name }}" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">العنوان</label>
+          <input name="address" class="form-control" value="{{ settings.address }}" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">الهاتف</label>
+          <input name="phone" class="form-control" value="{{ settings.phone }}" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">مسار الشعار</label>
+          <input name="logo_path" class="form-control" value="{{ settings.logo_path }}" />
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label">نوع ورق الطباعة</label>
+          <select name="print_paper_size" class="form-select">
+            <option value="A4" {% if settings.print_paper_size == 'A4' %}selected{% endif %}>A4</option>
+            <option value="80mm" {% if settings.print_paper_size == '80mm' %}selected{% endif %}>80mm</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-2 d-grid">
+          <button class="btn btn-primary">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {# =========================
+     Backups Section (From Design #2 - Unchanged)
+     ========================= #}
+  <style>
+    .cloud-panel {
+      background: linear-gradient(135deg, rgba(34,160,90,.10), rgba(96,113,105,.08));
+      border: 1px solid rgba(26,127,75,.22);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    .cloud-header {
+      background: linear-gradient(135deg, rgba(26,127,75,.95), rgba(26,127,75,.75));
+      color: #fff;
+      padding: 16px 18px;
+    }
+    .cloud-pill {
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.25);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cloud-body { padding: 16px 18px; }
+    .cloud-actions .btn { border-radius: 12px; }
+    .cloud-kpi {
+      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(26,127,75,.18);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    .cloud-panel .progress-bar {
+      background-color: var(--app-600);
+    }
+    .local-panel {
+      border-radius: 18px;
+      border: 1px solid rgba(26,127,75,.25);
+      background: linear-gradient(135deg, rgba(26,127,75,.08), rgba(96,113,105,.06));
+    }
+    .local-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(26,127,75,.18);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .local-body { padding: 16px 18px; }
+    .tiny-muted { font-size: 12px; color: rgba(33,37,41,.65); }
+    .btn-soft-primary {
+      background: rgba(34,160,90,.12);
+      border: 1px solid rgba(34,160,90,.25);
+      color: #1a7f4b;
+    }
+    .btn-soft-primary:hover { background: rgba(34,160,90,.18); }
+    .btn-soft-warning {
+      background: rgba(255,193,7,.16);
+      border: 1px solid rgba(255,193,7,.35);
+      color: #8a6d00;
+    }
+    .btn-soft-warning:hover { background: rgba(255,193,7,.22); }
+    .btn-soft-secondary {
+      background: rgba(108,117,125,.12);
+      border: 1px solid rgba(108,117,125,.22);
+      color: #495057;
+    }
+    .btn-soft-secondary:hover { background: rgba(108,117,125,.18); }
+
+    /* ===== Progress Floating Panel (NO backdrop, NO freeze) ===== */
+    .progress-float {
+      position: fixed;
+      left: 50%;
+      top: 18px;
+      transform: translateX(-50%);
+      z-index: 9999;
+      width: min(520px, calc(100% - 24px));
+      background: #fff;
+      border: 1px solid rgba(26,127,75,.22);
+      border-radius: 16px;
+      box-shadow: 0 12px 28px rgba(0,0,0,.12);
+      padding: 12px 14px;
+      display: none;
+    }
+    .progress-float .progress {
+      height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-float .progress-bar {
+      border-radius: 999px;
+    }
+    .progress-float .pf-title {
+      font-weight: 700;
+      color: #1a7f4b;
+      font-size: 14px;
+    }
+    .progress-float .pf-sub {
+      font-size: 12px;
+      color: rgba(33,37,41,.65);
+    }
+    .progress-float .pf-right {
+      font-weight: 700;
+      font-size: 13px;
+      color: #212529;
+    }
+
+    /* ===== Status Popup (NO Bootstrap modal, NO backdrop, NO freeze) ===== */
+    .status-popup {
+      position: fixed;
+      inset: 0;
+      pointer-events: none; /* allow scrolling & clicking page except inside card */
+      z-index: 9998;
+      display: none;
+    }
+    .status-popup .cardx {
+      pointer-events: auto;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(520px, calc(100% - 24px));
+      border-radius: 18px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid rgba(13,110,253,.20);
+      box-shadow: 0 14px 34px rgba(0,0,0,.18);
+    }
+    .status-popup .headx {
+      background: linear-gradient(135deg, rgba(13,110,253,.95), rgba(13,110,253,.70));
+      color: #fff;
+      padding: 12px 14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+    }
+    .status-popup .bodyx {
+      padding: 14px;
+    }
+    .status-popup .footx {
+      padding: 12px 14px;
+      border-top: 1px solid rgba(13,110,253,.12);
+      display:flex;
+      justify-content:flex-end;
+    }
+    .status-popup .closex {
+      border: 0;
+      background: rgba(255,255,255,.18);
+      color: #fff;
+      border-radius: 10px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .status-popup .closex:hover { background: rgba(255,255,255,.24); }
+  </style>
+
+  <div class="row g-3 mt-1">
+
+    <!-- Cloud Panel -->
+    <div class="col-12">
+      <div class="cloud-panel shadow-sm">
+        <div class="cloud-header">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <div>
+              <div class="h5 mb-1">☁️ نسخ السيرفر (Cloud)</div>
+              <div class="small" style="opacity:.9">يحفظ نسختين فقط: Current + Prev (احتياطي)</div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+              <span class="cloud-pill">
+                Current:
+                {% if cloud_status.current_exists %}
+                  <strong>موجود</strong>
+                {% else %}
+                  <strong>غير موجود</strong>
+                {% endif %}
+              </span>
+
+              <span class="cloud-pill">
+                Prev:
+                {% if cloud_status.prev_exists %}
+                  <strong>موجود</strong>
+                {% else %}
+                  <strong>غير متاح</strong>
+                {% endif %}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cloud-body">
+          <div class="row g-3 align-items-stretch">
+            <div class="col-12 col-lg-7">
+              <div class="cloud-actions d-flex flex-wrap gap-2">
+
+                <!-- Cloud Backup -->
+                <form method="post" action="/settings/cloud/backup"
+                      data-progress="⬆️ جاري رفع نسخة جديدة (Rotate)..."
+                      data-reload="1">
+                  <button class="btn btn-soft-primary" type="submit">
+                    ⬆️ رفع نسخة جديدة (Rotate)
+                  </button>
+                </form>
+
+                <!-- Restore Current -->
+                <form method="post" action="/settings/cloud/restore"
+                      data-progress="↩️ جاري استرجاع Current..."
+                      data-reload="1"
+                      onsubmit="return confirm('سيتم استبدال قاعدة البيانات الحالية. هل أنت متأكد؟');">
+                  <input type="hidden" name="which" value="current">
+                  <button class="btn btn-soft-warning" {% if not cloud_status.current_exists %}disabled{% endif %} type="submit">
+                    ↩️ استرجاع Current
+                  </button>
+                </form>
+
+                <!-- Restore Prev -->
+                <form method="post" action="/settings/cloud/restore"
+                      data-progress="🕘 جاري استرجاع Prev..."
+                      data-reload="1"
+                      onsubmit="return confirm('سيتم استبدال قاعدة البيانات الحالية. هل أنت متأكد؟');">
+                  <input type="hidden" name="which" value="prev">
+                  <button class="btn btn-outline-warning" {% if not cloud_status.prev_exists %}disabled{% endif %} type="submit">
+                    🕘 استرجاع Prev
+                  </button>
+                </form>
+
+                <!-- Status Popup Trigger (NO modal) -->
+                <button type="button" class="btn btn-soft-secondary" id="openStatusPopup">
+                  🧾 تفاصيل الحالة
+                </button>
+              </div>
+
+              <div class="tiny-muted mt-2">
+                💡 ملاحظة: Prev لن تظهر إلا بعد رفع نسختين على الأقل.
+              </div>
+            </div>
+
+            <div class="col-12 col-lg-5">
+              <div class="cloud-kpi">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <div class="fw-semibold">Health Check</div>
+                    <div class="tiny-muted">تأكد سريع من وجود النسخ</div>
+                  </div>
+
+                  {% set health = (1 if cloud_status.current_exists else 0) + (1 if cloud_status.prev_exists else 0) %}
+                  {% if health == 2 %}
+                    <span class="badge text-bg-success">ممتاز</span>
+                  {% elif health == 1 %}
+                    <span class="badge text-bg-warning">جيد</span>
+                  {% else %}
+                    <span class="badge text-bg-danger">غير جاهز</span>
+                  {% endif %}
+                </div>
+
+                <div class="mt-3">
+                  <div class="progress" style="height: 10px; border-radius: 999px;">
+                    {% if health == 2 %}
+                      <div class="progress-bar" style="width: 100%"></div>
+                    {% elif health == 1 %}
+                      <div class="progress-bar" style="width: 50%"></div>
+                    {% else %}
+                      <div class="progress-bar" style="width: 10%"></div>
+                    {% endif %}
+                  </div>
+                  <div class="tiny-muted mt-2">
+                    Current ID: <code>{{ cloud_status.current_public_id }}</code><br>
+                    Prev ID: <code>{{ cloud_status.prev_public_id }}</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Local Panel -->
+    <div class="col-12">
+      <div class="local-panel shadow-sm">
+        <div class="local-header">
+          <div>
+            <div class="h5 mb-0">💾 النسخ المحلية</div>
+            <div class="tiny-muted">محفوظة على جهاز السيرفر/الكمبيوتر</div>
+          </div>
+
+          <form method="post" action="/settings/backup"
+                data-progress="💾 جاري إنشاء نسخة محلية..."
+                data-reload="1"
+                class="m-0">
+            <button class="btn btn-success" style="border-radius: 12px;" type="submit">
+              ➕ إنشاء نسخة محلية الآن
+            </button>
+          </form>
+        </div>
+
+        <div class="local-body">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>الملف</th>
+                  <th class="text-end" style="width: 170px;">إجراء</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% if backups|length == 0 %}
+                  <tr><td colspan="2">لا توجد نسخ احتياطية محلية.</td></tr>
+                {% else %}
+                  {% for b in backups %}
+                  <tr>
+                    <td>{{ b.name }}</td>
+                    <td class="text-end">
+                      <form method="post" action="/settings/restore"
+                            data-progress="🔁 جاري الاسترجاع المحلي..."
+                            data-reload="1"
+                            onsubmit="return confirm('هل أنت متأكد من الاسترجاع المحلي؟ سيتم استبدال قاعدة البيانات الحالية.');">
+                        <input type="hidden" name="filename" value="{{ b.name }}">
+                        <button class="btn btn-sm btn-danger" style="border-radius: 10px;" type="submit">
+                          🔁 استرجاع محلي
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ✅ Progress Floating Panel -->
+  <div class="progress-float" id="progressFloat" aria-live="polite">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <div>
+        <div class="pf-title" id="pfTitle">جاري التنفيذ...</div>
+        <div class="pf-sub" id="pfSub">برجاء الانتظار</div>
+      </div>
+      <div class="pf-right"><span id="pfPct">0</span>%</div>
+    </div>
+    <div class="progress mt-2">
+      <div class="progress-bar progress-bar-striped progress-bar-animated"
+           id="pfBar" role="progressbar"
+           style="width:0%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+    </div>
+  </div>
+
+  <!-- ✅ Status Popup (replaces Bootstrap modal completely) -->
+  <div class="status-popup" id="statusPopup">
+    <div class="cardx">
+      <div class="headx">
+        <div class="fw-semibold">☁️ تفاصيل نسخ السيرفر</div>
+        <button type="button" class="closex" id="closeStatusPopup">إغلاق</button>
+      </div>
+      <div class="bodyx">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-semibold">Current</div>
+          {% if cloud_status.current_exists %}
+            <span class="badge text-bg-success">موجودة</span>
+          {% else %}
+            <span class="badge text-bg-danger">غير موجودة</span>
+          {% endif %}
+        </div>
+        <div class="tiny-muted mb-3"><code>{{ cloud_status.current_public_id }}</code></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-semibold">Prev</div>
+          {% if cloud_status.prev_exists %}
+            <span class="badge text-bg-success">موجودة</span>
+          {% else %}
+            <span class="badge text-bg-secondary">غير متاحة</span>
+          {% endif %}
+        </div>
+        <div class="tiny-muted"><code>{{ cloud_status.prev_public_id }}</code></div>
+
+        <hr>
+
+        <div class="tiny-muted">
+          لو زر Prev غير متاح: اعمل “رفع نسخة جديدة” مرتين عشان يتعمل Rotate.
+        </div>
+      </div>
+      <div class="footx">
+        <button type="button" class="btn btn-secondary" style="border-radius: 12px;" id="closeStatusPopup2">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    // ===== Progress helpers =====
+    const panel = document.getElementById("progressFloat");
+    const pfTitle = document.getElementById("pfTitle");
+    const pfSub   = document.getElementById("pfSub");
+    const pfPct   = document.getElementById("pfPct");
+    const pfBar   = document.getElementById("pfBar");
+
+    function setProgress(p) {
+      const v = Math.max(0, Math.min(100, Math.round(p)));
+      pfPct.textContent = String(v);
+      pfBar.style.width = v + "%";
+      pfBar.setAttribute("aria-valuenow", String(v));
+    }
+
+    function showProgress(titleText) {
+      pfTitle.textContent = titleText || "جاري التنفيذ...";
+      pfSub.textContent = "برجاء الانتظار... لا تغلق الصفحة";
+      setProgress(0);
+      panel.style.display = "block";
+    }
+
+    function hideProgress() {
+      panel.style.display = "none";
+    }
+
+    // Fake progress that stops at 92% until server replies
+    function startFakeProgress() {
+      let p = 0;
+      setProgress(0);
+      const t = setInterval(() => {
+        if (p < 92) {
+          p += (Math.random() * 6) + 1;
+          setProgress(p);
+        }
+      }, 250);
+
+      return function stop() { clearInterval(t); };
+    }
+
+    // Submit any form with data-progress using fetch, show progress, then reload
+    function wireProgressForms() {
+      document.querySelectorAll("form[data-progress]").forEach((form) => {
+        form.addEventListener("submit", async (e) => {
+          // لو inline onsubmit عمل prevent (cancel confirm), ما نعملش حاجة
+          if (e.defaultPrevented) return;
+
+          e.preventDefault();
+
+          const btn = form.querySelector("button[type='submit'],button:not([type]),input[type='submit']");
+          if (btn && btn.disabled) return;
+
+          const titleText = form.getAttribute("data-progress") || "جاري التنفيذ...";
+          const shouldReload = form.getAttribute("data-reload") === "1";
+
+          showProgress(titleText);
+          if (btn) btn.disabled = true;
+
+          const stopFake = startFakeProgress();
+
+          try {
+            const formData = new FormData(form);
+            const res = await fetch(form.action, {
+              method: (form.method || "POST").toUpperCase(),
+              body: formData,
+              credentials: "same-origin"
+            });
+
+            // حتى لو السيرفر بيرجع Redirect/HTML، هنعتبره نجاح لو 2xx/3xx
+            stopFake();
+            setProgress(100);
+            pfSub.textContent = "تمت العملية. جاري تحديث الصفحة...";
+
+            if (shouldReload) {
+              setTimeout(() => window.location.reload(), 350);
+            } else {
+              setTimeout(() => { hideProgress(); if (btn) btn.disabled = false; }, 600);
+            }
+          } catch (err) {
+            stopFake();
+            pfSub.textContent = "حدث خطأ أثناء التنفيذ. حاول مرة أخرى.";
+            // اظهر 0 وارجع الزر
+            setProgress(0);
+            setTimeout(() => {
+              hideProgress();
+              if (btn) btn.disabled = false;
+            }, 900);
+          }
+        }, true);
+      });
+    }
+
+    // ===== Status Popup (no dim, no freeze) =====
+    const statusPopup = document.getElementById("statusPopup");
+    const openBtn = document.getElementById("openStatusPopup");
+    const close1 = document.getElementById("closeStatusPopup");
+    const close2 = document.getElementById("closeStatusPopup2");
+
+    function openStatus() {
+      statusPopup.style.display = "block";
+    }
+    function closeStatus() {
+      statusPopup.style.display = "none";
+    }
+
+    if (openBtn) openBtn.addEventListener("click", openStatus);
+    if (close1) close1.addEventListener("click", closeStatus);
+    if (close2) close2.addEventListener("click", closeStatus);
+
+    // ESC closes popup
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeStatus();
+    });
+
+    // Start
+    wireProgressForms();
+  })();
+</script>
+
+{% endblock %}

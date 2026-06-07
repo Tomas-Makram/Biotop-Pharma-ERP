@@ -1,0 +1,447 @@
+﻿<div class="employee-reports" dir="rtl">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div>
+      <div class="h5 m-0">تقارير الموظفين</div>
+      <div class="muted">عرض تقارير الموظفين والمندوبين</div>
+    </div>
+    <div class="d-flex gap-2 no-print">
+      <button id="empReportsFetch" class="btn btn-primary">عرض</button>
+      <button id="empReportsPrint" class="btn btn-outline-secondary">طباعة</button>
+    </div>
+  </div>
+
+  <div class="reports-bar no-print">
+    <div class="reports-scroll" id="empReportsBar">
+      <button class="report-tab active" data-report="emp-adjustments">كشف الخصومات والإضافات</button>
+      <button class="report-tab" data-report="rep-sales-returns">قائمة مبيعات و مرتجعات مندوب</button>
+      <button class="report-tab" data-report="reps-sales-returns">قائمة مبيعات و مرتجعات المندوبين</button>
+      <button class="report-tab" data-report="rep-sales-by-company">مبيعات مندوب لشركة</button>
+      <button class="report-tab" data-report="rep-item-sales">تقرير مبيعات أصناف مندوب</button>
+    </div>
+  </div>
+
+  <div class="card p-3 mb-3 no-print" id="empFiltersPanel">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-md-4 filter-block" data-filter="date">
+        <label class="form-label">من تاريخ</label>
+        <input id="filterDateFrom" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="date">
+        <label class="form-label">إلى تاريخ</label>
+        <input id="filterDateTo" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="employee">
+        <label class="form-label">الموظف</label>
+        <select id="filterEmployee" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="adjustment-type">
+        <label class="form-label">نوع الكشف</label>
+        <select id="filterAdjustmentType" class="form-select" data-no-search>
+          <option value="all">الكل</option>
+          <option value="deduction">خصومات</option>
+          <option value="addition">إضافات</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="rep">
+        <label class="form-label">المندوب</label>
+        <select id="filterRep" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="company">
+        <label class="form-label">الشركة/العميل</label>
+        <select id="filterCompany" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="item">
+        <label class="form-label">الصنف</label>
+        <select id="filterItem" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="doc">
+        <label class="form-label">رقم المستند</label>
+        <input id="filterDocNo" type="text" class="form-control" />
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="branch">
+        <label class="form-label">الفرع</label>
+        <select id="filterBranch" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="include-returns">
+        <div class="form-check">
+          <input id="filterIncludeReturns" class="form-check-input" type="checkbox" checked />
+          <label class="form-check-label" for="filterIncludeReturns">تضمين المرتجعات</label>
+        </div>
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="group">
+        <label class="form-label">التجميع</label>
+        <select id="filterGroupBy" class="form-select" data-no-search>
+          <option value="">بدون</option>
+          <option value="rep">مندوب</option>
+          <option value="company">شركة</option>
+          <option value="item">صنف</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="pageAlert" class="alert alert-danger d-none" role="alert"></div>
+  <div id="loadingBox" class="alert alert-info d-none" role="alert">جاري تحميل التقرير...</div>
+
+  <div id="print-area" class="print-area">
+    <div class="print-header">
+      <div class="fw-semibold" data-print-title>عنوان التقرير</div>
+      <div class="small muted" data-print-date></div>
+      <div class="small muted" data-print-filters></div>
+    </div>
+    <div class="card p-3">
+      <div class="fw-semibold mb-3" id="reportTitle">كشف الخصومات والإضافات</div>
+      <div class="table-responsive">
+        <table class="table table-bordered mb-0">
+          <thead class="table-light">
+            <tr id="reportHead">
+              <th>العمود</th>
+            </tr>
+          </thead>
+          <tbody id="reportBody">
+            <tr>
+              <td class="text-center muted">اضغط عرض لإظهار البيانات.</td>
+            </tr>
+          </tbody>
+          <tfoot id="reportFooter" class="d-none">
+            <tr class="table-light" id="reportFooterRow"></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .reports-bar {
+    background: #f3f5f9;
+    border-radius: 12px;
+    padding: 8px;
+    overflow: hidden;
+  }
+  .reports-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .report-tab {
+    border: 1px solid #d0d7de;
+    background: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .report-tab.active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+  }
+  .filter-block { display: none; }
+  .filter-block.active { display: block; }
+
+  @media print {
+    body { background: #fff !important; }
+    .no-print { display: none !important; }
+    #print-area { display: block !important; }
+    #print-area * { direction: rtl; text-align: right; }
+  }
+</style>
+
+<script>
+  (function () {
+    const reportConfig = {
+      "emp-adjustments": {
+        title_ar: "كشف الخصومات والإضافات",
+        filters: ["date", "employee", "adjustment-type"],
+        columns: [
+          { key: "employee_name", label_ar: "الموظف" },
+          { key: "txn_date", label_ar: "التاريخ" },
+          { key: "adjustment_type", label_ar: "نوع الحركة" },
+          { key: "description", label_ar: "البيان" },
+          { key: "amount", label_ar: "المبلغ" },
+          { key: "reference_no", label_ar: "رقم المرجع" }
+        ],
+        totals: ["amount_sum"]
+      },
+      "rep-sales-returns": {
+        title_ar: "قائمة مبيعات و مرتجعات مندوب",
+        filters: ["date", "rep", "include-returns"],
+        columns: [
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "doc_type", label_ar: "نوع المستند" },
+          { key: "doc_no", label_ar: "رقم المستند" },
+          { key: "customer_name", label_ar: "العميل" },
+          { key: "net_amount", label_ar: "صافي" },
+          { key: "tax_amount", label_ar: "ضريبة" },
+          { key: "total_amount", label_ar: "الإجمالي" }
+        ],
+        totals: ["net_sum", "total_sum"]
+      },
+      "reps-sales-returns": {
+        title_ar: "قائمة مبيعات و مرتجعات المندوبين",
+        filters: ["date", "rep", "include-returns", "group"],
+        columns: [
+          { key: "rep_name", label_ar: "المندوب" },
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "doc_type", label_ar: "نوع المستند" },
+          { key: "doc_no", label_ar: "رقم المستند" },
+          { key: "customer_name", label_ar: "العميل" },
+          { key: "net_amount", label_ar: "صافي" },
+          { key: "total_amount", label_ar: "الإجمالي" }
+        ],
+        totals: ["net_sum", "total_sum"]
+      },
+      "rep-sales-by-company": {
+        title_ar: "مبيعات مندوب لشركة",
+        filters: ["date", "rep", "company"],
+        columns: [
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "doc_no", label_ar: "رقم المستند" },
+          { key: "customer_name", label_ar: "العميل" },
+          { key: "net_amount", label_ar: "صافي" },
+          { key: "total_amount", label_ar: "الإجمالي" }
+        ],
+        totals: ["net_sum", "total_sum"]
+      },
+      "rep-item-sales": {
+        title_ar: "تقرير مبيعات أصناف مندوب",
+        filters: ["date", "rep", "item"],
+        columns: [
+          { key: "item_code", label_ar: "كود الصنف" },
+          { key: "item_name", label_ar: "اسم الصنف" },
+          { key: "qty", label_ar: "الكمية" },
+          { key: "unit_price_avg", label_ar: "متوسط السعر" },
+          { key: "net_amount", label_ar: "صافي" },
+          { key: "total_amount", label_ar: "الإجمالي" }
+        ],
+        totals: ["qty_sum", "net_sum", "total_sum"]
+      }
+    };
+
+    const state = { reportKey: "emp-adjustments" };
+    const tabs = document.querySelectorAll(".report-tab");
+    const reportTitle = document.getElementById("reportTitle");
+    const reportHead = document.getElementById("reportHead");
+    const reportBody = document.getElementById("reportBody");
+    const reportFooter = document.getElementById("reportFooter");
+    const reportFooterRow = document.getElementById("reportFooterRow");
+    const filterBlocks = document.querySelectorAll(".filter-block");
+    const pageAlert = document.getElementById("pageAlert");
+    const loadingBox = document.getElementById("loadingBox");
+
+    const filterDateFrom = document.getElementById("filterDateFrom");
+    const filterDateTo = document.getElementById("filterDateTo");
+    const filterEmployee = document.getElementById("filterEmployee");
+    const filterRep = document.getElementById("filterRep");
+    const filterCompany = document.getElementById("filterCompany");
+    const filterItem = document.getElementById("filterItem");
+    const filterDocNo = document.getElementById("filterDocNo");
+    const filterBranch = document.getElementById("filterBranch");
+    const filterIncludeReturns = document.getElementById("filterIncludeReturns");
+    const filterGroupBy = document.getElementById("filterGroupBy");
+    const filterAdjustmentType = document.getElementById("filterAdjustmentType");
+
+    function showAlert(message) {
+      pageAlert.textContent = message;
+      pageAlert.classList.remove("d-none");
+    }
+
+    function hideAlert() {
+      pageAlert.classList.add("d-none");
+    }
+
+    function setLoading(isLoading) {
+      loadingBox.classList.toggle("d-none", !isLoading);
+    }
+
+    function formatNumber(value) {
+      const num = Number(value || 0);
+      return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function applyFiltersUI() {
+      const config = reportConfig[state.reportKey];
+      filterBlocks.forEach((block) => {
+        const key = block.getAttribute("data-filter");
+        block.classList.toggle("active", config.filters.includes(key));
+      });
+    }
+
+    function renderTable(data) {
+      const config = reportConfig[state.reportKey];
+      const columns = data.columns && data.columns.length ? data.columns : config.columns;
+
+      reportTitle.textContent = data.title_ar || config.title_ar;
+      reportHead.innerHTML = "";
+      reportBody.innerHTML = "";
+
+      columns.forEach((col) => {
+        const th = document.createElement("th");
+        th.textContent = col.label_ar || col.key;
+        reportHead.appendChild(th);
+      });
+
+      const rows = data.rows || [];
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="${columns.length}" class="text-center muted">لا توجد بيانات.</td>`;
+        reportBody.appendChild(tr);
+      } else {
+        rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = columns.map((col) => {
+            const value = row[col.key];
+            if (typeof value === "number") {
+              return `<td>${formatNumber(value)}</td>`;
+            }
+            return `<td>${value ?? ""}</td>`;
+          }).join("");
+          reportBody.appendChild(tr);
+        });
+      }
+
+      const totals = data.totals || {};
+      if (Object.keys(totals).length) {
+        reportFooter.classList.remove("d-none");
+        reportFooterRow.innerHTML = columns.map((col, idx) => {
+          if (idx === 0) return `<th>الإجمالي</th>`;
+          if (col.key === "amount" && totals.amount_sum !== undefined) {
+            return `<th>${formatNumber(totals.amount_sum)}</th>`;
+          }
+          if (col.key === "amount_in" && totals.total_in !== undefined) {
+            return `<th>${formatNumber(totals.total_in)}</th>`;
+          }
+          if (col.key === "amount_out" && totals.total_out !== undefined) {
+            return `<th>${formatNumber(totals.total_out)}</th>`;
+          }
+          if (col.key === "balance" && totals.ending_balance !== undefined) {
+            return `<th>${formatNumber(totals.ending_balance)}</th>`;
+          }
+          if (col.key === "net_amount" && totals.net_sum !== undefined) {
+            return `<th>${formatNumber(totals.net_sum)}</th>`;
+          }
+          if (col.key === "total_amount" && totals.total_sum !== undefined) {
+            return `<th>${formatNumber(totals.total_sum)}</th>`;
+          }
+          if (col.key === "qty" && totals.qty_sum !== undefined) {
+            return `<th>${formatNumber(totals.qty_sum)}</th>`;
+          }
+          return "<th></th>";
+        }).join("");
+      } else {
+        reportFooter.classList.add("d-none");
+        reportFooterRow.innerHTML = "";
+      }
+    }
+
+    function buildPayload() {
+      return {
+        date_from: filterDateFrom.value || null,
+        date_to: filterDateTo.value || null,
+        employee_id: filterEmployee.value || null,
+        adjustment_type: filterAdjustmentType ? filterAdjustmentType.value : "all",
+        rep_id: filterRep.value || null,
+        company_id: filterCompany.value || null,
+        item_id: filterItem.value || null,
+        doc_no: filterDocNo.value || null,
+        branch_id: filterBranch.value || null,
+        include_returns: !!filterIncludeReturns.checked,
+        group_by: filterGroupBy.value || null
+      };
+    }
+
+    async function fetchReport() {
+      hideAlert();
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/employees/reports/${state.reportKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildPayload())
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "حدث خطأ أثناء جلب التقرير.");
+        renderTable(data);
+      } catch (err) {
+        showAlert(err.message || "تعذر تحميل التقرير.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function loadLookups() {
+      const [employeesRes, repsRes, companiesRes, itemsRes, branchesRes] = await Promise.all([
+        fetch("/api/lookups/employees"),
+        fetch("/api/lookups/reps"),
+        fetch("/api/lookups/companies"),
+        fetch("/api/lookups/items"),
+        fetch("/api/lookups/branches")
+      ]);
+
+      const employees = employeesRes.ok ? await employeesRes.json() : [];
+      const reps = repsRes.ok ? await repsRes.json() : [];
+      const companies = companiesRes.ok ? await companiesRes.json() : [];
+      const items = itemsRes.ok ? await itemsRes.json() : [];
+      const branches = branchesRes.ok ? await branchesRes.json() : [];
+
+      employees.forEach((emp) => {
+        const opt = document.createElement("option");
+        opt.value = emp.id;
+        opt.textContent = emp.name;
+        filterEmployee.appendChild(opt);
+      });
+      reps.forEach((rep) => {
+        const opt = document.createElement("option");
+        opt.value = rep.id;
+        opt.textContent = rep.name;
+        filterRep.appendChild(opt);
+      });
+      companies.forEach((comp) => {
+        const opt = document.createElement("option");
+        opt.value = comp.id;
+        opt.textContent = comp.name;
+        filterCompany.appendChild(opt);
+      });
+      items.forEach((item) => {
+        const opt = document.createElement("option");
+        opt.value = item.id;
+        opt.textContent = item.name;
+        filterItem.appendChild(opt);
+      });
+      branches.forEach((branch) => {
+        const opt = document.createElement("option");
+        opt.value = branch.id;
+        opt.textContent = branch.name;
+        filterBranch.appendChild(opt);
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        state.reportKey = tab.dataset.report;
+        applyFiltersUI();
+        renderTable({ title_ar: reportConfig[state.reportKey].title_ar, columns: reportConfig[state.reportKey].columns, rows: [] });
+      });
+    });
+
+    document.getElementById("empReportsFetch").addEventListener("click", fetchReport);
+    document.getElementById("empReportsPrint").addEventListener("click", () => window.printReport ? window.printReport() : window.print());
+
+    applyFiltersUI();
+    loadLookups().catch(() => showAlert("تعذر تحميل بيانات القوائم."));
+  })();
+</script>

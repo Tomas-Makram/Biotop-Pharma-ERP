@@ -1,0 +1,163 @@
+﻿<div class="row g-3">
+  <div class="col-12">
+    <div id="pageAlert" class="alert d-none"></div>
+  </div>
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h2 class="h4 m-0">هالك/تالف</h2>
+        <div class="muted">تسجيل كميات تالفة من المخزون</div>
+      </div>
+
+      <hr class="my-4" />
+
+      <form
+        id="damageForm"
+        class="row g-3"
+        hx-post="/damages"
+        hx-target="#tableContainer"
+        hx-swap="innerHTML"
+        data-alert-success="تم تسجيل الهالك"
+        data-alert-fail="فشل تسجيل الهالك"
+      >
+        <div class="col-12 col-md-3">
+          <label class="form-label">التاريخ</label>
+          <input name="date" type="date" class="form-control" value="{{ today }}" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">المخزن</label>
+          <select name="location_id" class="form-select" required>
+            <option value="">اختر المخزن</option>
+            {% for loc in locations %}
+              <option value="{{ loc.id }}">{{ loc.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-5">
+          <label class="form-label">ملاحظات</label>
+          <input name="notes" class="form-control" />
+        </div>
+
+        <div class="col-12">
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle" id="damageLinesTable">
+              <thead class="table-light">
+                <tr>
+                  <th>الصنف</th>
+                  <th>رقم الباتش</th>
+                  <th style="width: 160px;">الكمية</th>
+                  <th style="width: 80px;" class="text-center">إزالة</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <!-- الزر ممكن تسيبه أو تشيله براحتك، لكن Enter هيقوم بالمهمة -->
+          <button type="button" class="btn btn-outline-secondary" id="addDamageLine">إضافة سطر</button>
+        </div>
+
+        <div class="col-12 col-md-2 d-grid">
+          <button class="btn btn-danger" type="submit">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3 d-flex align-items-center justify-content-between">
+        <h2 class="h5 m-0">سجل الهالك</h2>
+        <div class="muted">الإجمالي: <span data-total-count>{{ damages|length }}</span></div>
+      </div>
+      <div id="tableContainer">
+        {% include "damages/table.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const damageItems = {{ items | tojson }};
+  const damageBody = document.querySelector('#damageLinesTable tbody');
+  const damageForm = document.getElementById('damageForm');
+
+  function buildDamageOptions() {
+    return ['<option value="">اختر الصنف</option>']
+      .concat(damageItems.map((i) => `<option value="${i.id}">${i.name}</option>`))
+      .join('');
+  }
+
+  function addDamageLine() {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>
+        <select name="item_id" class="form-select" required>
+          ${buildDamageOptions()}
+        </select>
+      </td>
+      <td>
+        <input name="lot_code" class="form-control" required />
+      </td>
+      <td>
+        <input name="qty" class="form-control" type="number" step="0.01" min="0.01" required />
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn btn-sm btn-outline-danger remove-line">حذف</button>
+      </td>
+    `;
+    damageBody.appendChild(row);
+  }
+
+  // 1) زر الإضافة (اختياري تسيبه)
+  document.getElementById('addDamageLine').addEventListener('click', () => {
+    addDamageLine();
+    const newRow = damageBody.lastElementChild;
+    newRow.querySelector('select').focus();
+  });
+
+  // 2) حذف سطر
+  damageBody.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-line')) {
+      e.target.closest('tr').remove();
+
+      // لو الجدول فضي، نضيف سطر تلقائي
+      if (damageBody.children.length === 0) {
+        addDamageLine();
+      }
+    }
+  });
+
+  // 3) منع Submit عند الضغط Enter في الفورم بالكامل
+  // (وبالتالي الحفظ لا يتم إلا بزر "حفظ")
+  damageForm.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+    }
+  });
+
+  // 4) Enter داخل سطر -> يضيف سطر جديد (فقط لو أنت في آخر سطر)
+  damageBody.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+
+    const currentRow = e.target.closest('tr');
+    if (!currentRow) return;
+
+    const rows = Array.from(damageBody.querySelectorAll('tr'));
+    const isLastRow = rows[rows.length - 1] === currentRow;
+
+    if (isLastRow) {
+      e.preventDefault();
+      addDamageLine();
+
+      // فوكس على الصنف في السطر الجديد
+      const newRow = damageBody.lastElementChild;
+      newRow.querySelector('select').focus();
+    }
+  });
+
+  // 5) أول مرة لو مفيش سطور نضيف واحد
+  if (damageBody.children.length === 0) {
+    addDamageLine();
+  }
+</script>

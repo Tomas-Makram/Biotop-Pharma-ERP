@@ -1,0 +1,40 @@
+﻿<div id="adjustments-table" data-total="{{ adjustments|length }}">
+  {% if adjustments|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد عمليات خصم/إضافة حتى الآن.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>التاريخ</th>
+            <th>الشهر</th>
+            <th>السنة</th>
+            <th>الموظف</th>
+            <th>العملية</th>
+            <th>المبلغ</th>
+            <th>وذلك عن</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in adjustments %}
+          <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.date.strftime('%Y-%m-%d') if row.date else '-' }}</td>
+            <td>{{ row.month }}</td>
+            <td>{{ row.year }}</td>
+            <td>{{ row.rep.name if row.rep else '-' }}</td>
+            <td>{{ 'إضافة' if row.kind == 'addition' else 'خصم' }}</td>
+            <td>{{ row.amount }}</td>
+            <td>{{ row.reason or '-' }}</td>
+            <td>{{ row.notes or '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

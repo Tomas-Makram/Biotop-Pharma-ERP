@@ -1,0 +1,26 @@
+﻿{% extends "base.html" %}
+
+{% block title %}المشتريات{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-3">
+    <div class="card p-3 h-100">
+      <h2 class="h5 mb-3">قائمة المشتريات</h2>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-primary" hx-get="/purchases/section/purchases" hx-target="#purchasesSection" hx-swap="innerHTML">تسجيل مشتريات</button>
+        <button class="btn btn-outline-primary" hx-get="/purchases/section/returns" hx-target="#purchasesSection" hx-swap="innerHTML">تسجيل مردودات مشتريات</button>
+        <button class="btn btn-outline-primary" hx-get="/purchases/section/orders" hx-target="#purchasesSection" hx-swap="innerHTML">تسجيل طلبات شراء</button>
+        <button class="btn btn-outline-primary" hx-get="/purchases/section/opening" hx-target="#purchasesSection" hx-swap="innerHTML">رصيد أول مدة</button>
+        <button class="btn btn-outline-primary" hx-get="/purchases/section/other-expenses" hx-target="#purchasesSection" hx-swap="innerHTML">مصاريف أخرى</button>
+        <button class="btn btn-outline-primary" hx-get="/purchases/section/reports" hx-target="#purchasesSection" hx-swap="innerHTML">تقارير المشتريات</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-9">
+    <div id="purchasesSection">
+      {% include "purchases/sections/purchases_list.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

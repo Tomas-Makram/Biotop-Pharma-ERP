@@ -1,0 +1,42 @@
+﻿<div id="salaries-table" data-total="{{ salaries|length }}">
+  {% if salaries|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد بيانات حتى الآن.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>الموظف</th>
+            <th>المسمى الوظيفي</th>
+            <th>المرتب الأساسي</th>
+            <th>إضافات الشهر</th>
+            <th>خصومات الشهر</th>
+            <th>الصافي</th>
+            <th>حالة التسديد</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in salaries %}
+          <tr>
+            <td>{{ row.rep.name if row.rep else '-' }}</td>
+            <td>{{ row.rep.job_title or '-' }}</td>
+            <td>{{ '%.2f'|format(row.base_salary or 0) }}</td>
+            <td>{{ '%.2f'|format(row.additions or 0) }}</td>
+            <td>{{ '%.2f'|format(row.deductions or 0) }}</td>
+            <td>{{ '%.2f'|format(row.net_salary or 0) }}</td>
+            <td>
+              {% if row.paid_amount and row.paid_amount > 0 %}
+                <span class="badge bg-success">تم التسديد</span>
+              {% else %}
+                <span class="badge bg-secondary">غير مسدد</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

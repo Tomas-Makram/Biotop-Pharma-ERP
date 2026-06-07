@@ -1,0 +1,48 @@
+﻿{% extends "base.html" %}
+
+{% block title %}السيارات{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h1 class="h3 m-0">السيارات</h1>
+        <div class="muted">إضافة وتعديل بيانات سيارات التوزيع</div>
+      </div>
+
+      <hr class="my-4"/>
+
+      <form class="row g-3 align-items-end" hx-post="/vehicles" hx-target="#tableContainer" hx-swap="innerHTML" hx-on="htmx:afterRequest: this.reset()">
+        <div class="col-12 col-md-4">
+          <label class="form-label">اسم السيارة</label>
+          <input name="name" class="form-control" placeholder="مثال: عربية 1" required />
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label">رقم اللوحة</label>
+          <input name="plate_number" class="form-control" />
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label">ملاحظات</label>
+          <input name="notes" class="form-control" />
+        </div>
+        <div class="col-12 col-md-2 d-grid">
+          <button class="btn btn-success" type="submit">إضافة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3 d-flex align-items-center justify-content-between">
+        <h2 class="h5 m-0">قائمة السيارات</h2>
+        <div class="muted">الإجمالي: <span data-total-count>{{ vehicles|length }}</span></div>
+      </div>
+      <div id="tableContainer">
+        {% include "vehicles/table.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

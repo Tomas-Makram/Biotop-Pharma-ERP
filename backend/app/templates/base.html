@@ -1,0 +1,1048 @@
+﻿<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}نظام ERP{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --app-900: #0b2e1b;
+      --app-800: #0f3b23;
+      --app-700: #135b35;
+      --app-600: #1a7f4b;
+      --app-500: #22a05a;
+      --app-400: #4fbe7a;
+      --app-300: #8ad3a6;
+      --app-200: #cfeedd;
+      --app-100: #e9f7ef;
+      --app-50: #f5fbf7;
+      --ink: #0f172a;
+      --muted: #607169;
+      --card: #ffffff;
+      --bg: #f1f6f2;
+      --ring: rgba(34, 160, 90, 0.35);
+      --shadow: 0 14px 34px rgba(11, 46, 27, 0.12);
+      --shadow-soft: 0 8px 20px rgba(11, 46, 27, 0.08);
+    }
+
+    :root,
+    [data-bs-theme="light"] {
+      --bs-body-color: var(--ink);
+      --bs-body-bg: var(--bg);
+      --bs-border-color: #d6e3db;
+      --bs-primary: var(--app-600);
+      --bs-primary-rgb: 26, 127, 75;
+      --bs-success: var(--app-500);
+      --bs-success-rgb: 34, 160, 90;
+      --bs-link-color: var(--app-700);
+      --bs-link-hover-color: var(--app-800);
+      --bs-secondary-color: var(--muted);
+      --bs-border-radius: 14px;
+      --bs-border-radius-sm: 10px;
+      --bs-border-radius-lg: 18px;
+      --bs-focus-ring-color: var(--ring);
+    }
+
+    body.app-body {
+      font-family: "Cairo", "Tajawal", "IBM Plex Sans Arabic", sans-serif;
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(1100px 600px at 12% -10%, rgba(34, 160, 90, 0.16), transparent 60%),
+        radial-gradient(900px 500px at 112% 10%, rgba(11, 46, 27, 0.12), transparent 55%),
+        linear-gradient(180deg, #f7fbf8 0%, #eef5f0 45%, #edf4ef 100%);
+      color: var(--ink);
+      min-height: 100vh;
+      letter-spacing: 0.2px;
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 1;
+    }
+
+    .app-nav {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(26, 127, 75, 0.16);
+      border-radius: 18px;
+      box-shadow: var(--shadow-soft);
+      padding: 0.5rem 0.6rem;
+      gap: 0.45rem;
+      backdrop-filter: blur(10px);
+      align-items: center;
+    }
+
+    .card {
+      border: 1px solid rgba(26, 127, 75, 0.12);
+      box-shadow: var(--shadow-soft);
+      border-radius: 18px;
+      background: var(--card);
+    }
+
+    .nav-btn {
+      border-radius: 12px;
+      padding: 0.42rem 0.9rem;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+
+    .btn {
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(11, 46, 27, 0.12);
+    }
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .btn-primary {
+      --bs-btn-bg: var(--app-600);
+      --bs-btn-border-color: var(--app-600);
+      --bs-btn-hover-bg: var(--app-700);
+      --bs-btn-hover-border-color: var(--app-700);
+      --bs-btn-active-bg: var(--app-800);
+      --bs-btn-active-border-color: var(--app-800);
+      --bs-btn-focus-shadow-rgb: 34, 160, 90;
+    }
+
+    .btn-outline-primary {
+      --bs-btn-color: var(--app-700);
+      --bs-btn-border-color: var(--app-300);
+      --bs-btn-hover-bg: rgba(34, 160, 90, 0.12);
+      --bs-btn-hover-border-color: var(--app-500);
+      --bs-btn-hover-color: var(--app-800);
+      --bs-btn-active-bg: rgba(34, 160, 90, 0.18);
+      --bs-btn-active-border-color: var(--app-600);
+      --bs-btn-active-color: var(--app-900);
+    }
+
+    .btn-success {
+      --bs-btn-bg: var(--app-500);
+      --bs-btn-border-color: var(--app-500);
+      --bs-btn-hover-bg: var(--app-600);
+      --bs-btn-hover-border-color: var(--app-600);
+      --bs-btn-active-bg: var(--app-700);
+      --bs-btn-active-border-color: var(--app-700);
+      --bs-btn-focus-shadow-rgb: 34, 160, 90;
+    }
+
+    .btn-outline-secondary {
+      --bs-btn-color: #3c4a44;
+      --bs-btn-border-color: #c9d6ce;
+      --bs-btn-hover-bg: #eef4f1;
+      --bs-btn-hover-border-color: #b9c9c0;
+    }
+
+    .muted { color: var(--muted); }
+
+    .form-control,
+    .form-select,
+    .form-check-input {
+      border-radius: 12px;
+      border-color: #d6e3db;
+      background-color: #fff;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: var(--app-500);
+      box-shadow: 0 0 0 0.2rem var(--ring);
+    }
+
+    .form-check-input:checked {
+      background-color: var(--app-600);
+      border-color: var(--app-600);
+    }
+
+    .table thead th {
+      white-space: nowrap;
+      background: #f0f7f2;
+      color: var(--app-800);
+      border-bottom: 1px solid #d6e3db;
+      font-weight: 700;
+    }
+
+    .table > :not(caption) > * > * {
+      padding: 0.75rem 0.9rem;
+      border-color: #e1ebe5;
+    }
+
+    .table tbody tr {
+      transition: background 0.15s ease;
+    }
+
+    .table tbody tr:hover {
+      background: rgba(34, 160, 90, 0.08);
+    }
+
+    .table-striped > tbody > tr:nth-of-type(odd) > * {
+      background-color: rgba(34, 160, 90, 0.04);
+    }
+
+    .report-actions { display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap; }
+    .report-actions .btn { height: 38px; }
+    .print-area { width: 100%; }
+    .print-header { display: none; }
+
+    .app-content > .card,
+    .app-content .table-wrapper,
+    .app-content .grid-wrapper,
+    .app-content .report-table-container {
+      animation: riseIn 0.35s ease both;
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .app-nav { padding: 0.6rem; }
+      .nav-btn {
+        padding: 0.45rem 0.8rem;
+        font-size: 0.92rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .btn,
+      .app-content > .card,
+      .app-content .table-wrapper,
+      .app-content .grid-wrapper,
+      .app-content .report-table-container {
+        animation: none;
+        transition: none;
+      }
+    }
+
+    @media print {
+      @page { size: A4 portrait; margin: 12mm; }
+      .no-print { display: none !important; }
+      body { background: #fff; }
+      body.app-body { background: #fff !important; }
+      .nav-btn, .card { box-shadow: none !important; }
+      .card { border: 0 !important; }
+      .report-only { display: none !important; }
+      .report-print { display: block !important; }
+      body.has-print-area * { visibility: hidden !important; }
+      body.has-print-area #print-area,
+      body.has-print-area #print-area * {
+        visibility: visible !important;
+      }
+      body.has-print-area #print-area {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+      }
+      body.has-print-area #print-area { direction: rtl; text-align: right; }
+      body.has-print-area .print-header { display: block !important; margin-bottom: 12px; }
+      body.has-print-area .table-responsive,
+      body.has-print-area .table-wrapper,
+      body.has-print-area .grid-wrapper,
+      body.has-print-area .report-table-container,
+      body.has-print-area [style*="overflow: auto"],
+      body.has-print-area [style*="overflow:auto"],
+      body.has-print-area [style*="overflow: scroll"],
+      body.has-print-area [style*="overflow:scroll"] {
+        overflow: visible !important;
+        max-width: none !important;
+        max-height: none !important;
+        height: auto !important;
+        display: block !important;
+      }
+      body.has-print-area .table-responsive::-webkit-scrollbar,
+      body.has-print-area [style*="overflow"]::-webkit-scrollbar {
+        display: none !important;
+      }
+      body.has-print-area table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        table-layout: fixed;
+      }
+      body.has-print-area thead { display: table-header-group; }
+      body.has-print-area tfoot { display: table-footer-group; }
+      body.has-print-area tr,
+      body.has-print-area td,
+      body.has-print-area th { page-break-inside: avoid; }
+      body.has-print-area th,
+      body.has-print-area td {
+        border: 1px solid #000 !important;
+        padding: 6px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+      }
+      body.has-print-area * { font-size: 12pt; }
+      body.print-landscape page { size: A4 landscape; margin: 12mm; }
+    }
+    .report-print { display: none; }
+  </style>
+</head>
+<body class="app-body p-3 p-lg-4">
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <div class="container app-shell">
+    <div class="app-nav d-flex flex-wrap mb-4 no-print">
+      <a class="btn nav-btn {{'btn-primary' if active_page=='items' else 'btn-outline-primary'}}" href="/items">الأصناف</a>
+      <a class="btn nav-btn {{'btn-primary' if active_page=='customers' else 'btn-outline-primary'}}" href="/customers">العملاء</a>
+      <a class="btn nav-btn {{'btn-primary' if active_page=='doctors' else 'btn-outline-primary'}}" href="/doctors">الأطباء</a>
+      <a class="btn nav-btn {{'btn-primary' if active_page=='suppliers' else 'btn-outline-primary'}}" href="/suppliers">الموردين</a>
+      <a class="btn nav-btn {{'btn-primary' if active_page=='purchases' else 'btn-outline-primary'}}" href="/purchases">المشتريات</a>
+      <a class="btn nav-btn {{'btn-primary' if active_page=='sales' else 'btn-outline-primary'}}" href="/sales">المبيعات</a>
+      <a class="btn nav-btn {{'btn-primary' if active_page=='stocktake' else 'btn-outline-primary'}}" href="/stocktake">الجرد</a>
+      <a class="btn nav-btn {{'btn-primary' if active_page=='reps' else 'btn-outline-primary'}}" href="/reps">الموظفين</a>
+      <a class="btn nav-btn {{'btn-primary' if active_page=='treasury' else 'btn-outline-primary'}}" href="/treasury">الخزنة</a>
+      <a class="btn nav-btn {{'btn-primary' if active_page=='settings' else 'btn-outline-primary'}}" href="/settings">الإعدادات</a>
+      <a class="btn nav-btn btn-outline-dark" href="/account/settings">AdminDS</a>
+      <form method="post" action="/logout" class="d-inline">
+        <button type="submit" class="btn nav-btn btn-outline-danger">خروج</button>
+      </form>
+
+    </div>
+
+    <div class="app-content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+  <script>
+    function initDatalistSelects(root = document) {
+      const selects = root.querySelectorAll('select:not([data-no-search]):not([data-datalist-init])');
+      selects.forEach((select, idx) => {
+        select.setAttribute('data-datalist-init', '1');
+        const name = select.getAttribute('name');
+        if (!name) return;
+
+        const listId = `dl_${name}_${Date.now()}_${idx}`;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'w-100';
+
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = name;
+        hidden.value = select.value || '';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'form-control';
+        input.setAttribute('list', listId);
+        input.placeholder = '';
+        input.value = select.value ? (select.selectedOptions[0]?.text || '') : '';
+
+        if (select.required) {
+          input.setAttribute('data-required', '1');
+        }
+
+        const dataList = document.createElement('datalist');
+        dataList.id = listId;
+        Array.from(select.options).forEach((opt) => {
+          if (!opt.value) return;
+          const option = document.createElement('option');
+          option.value = opt.text;
+          option.dataset.value = opt.value;
+          dataList.appendChild(option);
+        });
+
+        input.addEventListener('input', () => {
+          const match = Array.from(dataList.options).find(
+            (o) => o.value.trim() === input.value.trim()
+          );
+          hidden.value = match ? match.dataset.value : '';
+        });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowDown' && input.value.trim() === '') {
+            // ensure the datalist shows all options when empty
+            input.dispatchEvent(new Event('input'));
+          }
+        });
+
+        // Replace select with input+datalist+hidden
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.appendChild(input);
+        wrapper.appendChild(hidden);
+        wrapper.appendChild(dataList);
+        select.remove();
+      });
+
+      // Simple required validation
+      const forms = root.querySelectorAll('form');
+      forms.forEach((form) => {
+        if (form.dataset.datalistValidated) return;
+        form.dataset.datalistValidated = '1';
+        form.addEventListener('submit', (e) => {
+          const requiredInputs = form.querySelectorAll('input[data-required=\"1\"]');
+          for (const inp of requiredInputs) {
+            const hidden = inp.nextElementSibling;
+            if (hidden && hidden.type === 'hidden' && !hidden.value) {
+              e.preventDefault();
+              inp.focus();
+              break;
+            }
+          }
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initDatalistSelects(document);
+      if (document.getElementById('print-area')) document.body.classList.add('has-print-area');
+    });
+
+    document.body.addEventListener('htmx:afterSwap', (evt) => {
+      initDatalistSelects(evt.target);
+      if (document.getElementById('print-area')) document.body.classList.add('has-print-area');
+    });
+
+    function formatPrintDate() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function collectFilterSummary() {
+      const blocks = document.querySelectorAll('.filter-block.active, .filter-block');
+      const items = [];
+      blocks.forEach((block) => {
+        const label = block.querySelector('label')?.textContent?.trim();
+        const control = block.querySelector('input, select, textarea');
+        if (!label || !control) return;
+        let value = '';
+        if (control.tagName === 'SELECT') {
+          value = control.options[control.selectedIndex]?.textContent?.trim() || '';
+        } else {
+          value = control.value?.trim() || '';
+        }
+        if (value) items.push(`${label}: ${value}`);
+      });
+      return items.join(' | ');
+    }
+
+    window.printReport = function () {
+      const printArea = document.getElementById('print-area');
+      if (!printArea) {
+        window.print();
+        return;
+      }
+      document.body.classList.toggle('print-landscape', printArea.classList.contains('landscape-print'));
+      document.body.classList.add('has-print-area');
+      const header = printArea.querySelector('.print-header');
+      if (header) {
+        const titleEl = header.querySelector('[data-print-title]');
+        const dateEl = header.querySelector('[data-print-date]');
+        const filtersEl = header.querySelector('[data-print-filters]');
+        if (titleEl) {
+          const pageTitle = document.getElementById('reportTitle')?.textContent?.trim()
+            || document.querySelector('h1, h2, h3')?.textContent?.trim()
+            || 'عنوان التقرير';
+          titleEl.textContent = pageTitle;
+        }
+        if (dateEl) dateEl.textContent = `تاريخ الطباعة: ${formatPrintDate()}`;
+        if (filtersEl) {
+          const filtersText = collectFilterSummary();
+          filtersEl.textContent = filtersText ? `الفلاتر: ${filtersText}` : '';
+        }
+      }
+      window.print();
+    }
+
+    function updateTotals(target) {
+      const totalEl = target.querySelector('[data-total]');
+      if (!totalEl) return;
+      const count = totalEl.getAttribute('data-total') || '0';
+      document.querySelectorAll('[data-total-count]').forEach((el) => {
+        el.textContent = count;
+      });
+    }
+
+    function showPageAlert(type, message) {
+      const alertBox = document.getElementById('pageAlert');
+      if (!alertBox) return;
+      alertBox.className = `alert alert-${type}`;
+      alertBox.textContent = message;
+      alertBox.classList.remove('d-none');
+    }
+
+    function initSaleForm() {
+      const table = document.getElementById('saleItemsTable');
+      if (!table || table.dataset.ready === '1') return;
+      const dataEl = document.getElementById('salesData');
+      if (!dataEl) return;
+      const items = JSON.parse(dataEl.dataset.items || '[]');
+      const tbody = table.querySelector('tbody');
+      const customerSelect = document.querySelector('select[name="to_location_id"]');
+      const prevBalanceEl = document.getElementById('customerPrevBalance');
+      const invoiceTotalEl = document.getElementById('saleInvoiceTotal');
+      const newBalanceEl = document.getElementById('customerNewBalance');
+
+      function getCustomerPrevBalance() {
+        const opt = customerSelect?.selectedOptions?.[0];
+        const raw = opt?.dataset?.balance || '0';
+        const val = Number(raw);
+        return Number.isFinite(val) ? val : 0;
+      }
+
+      function getSaleInvoiceTotal() {
+        let total = 0;
+        tbody.querySelectorAll('input[readonly]').forEach((input) => {
+          const val = Number(input.value || 0);
+          if (Number.isFinite(val)) total += val;
+        });
+        return total;
+      }
+
+      function updateSaleSummary() {
+        if (!prevBalanceEl || !invoiceTotalEl || !newBalanceEl) return;
+        const prev = getCustomerPrevBalance();
+        const invoice = getSaleInvoiceTotal();
+        prevBalanceEl.textContent = prev.toFixed(2);
+        invoiceTotalEl.textContent = invoice.toFixed(2);
+        newBalanceEl.textContent = (prev + invoice).toFixed(2);
+      }
+
+      function updateRowTotal(row) {
+        const qty = Number(row.querySelector('input[name="requested_qty"]')?.value || 0);
+        const price = Number(row.querySelector('input[name="unit_price"]')?.value || 0);
+        const discount = Number(row.querySelector('input[name="discount_amount"]')?.value || 0);
+        const totalInput = row.querySelector('input[readonly]');
+        const lineBase = qty * price;
+        const lineDiscount = lineBase * (discount / 100);
+        const total = Math.max(lineBase - lineDiscount, 0);
+        if (totalInput) totalInput.value = total.toFixed(2);
+        updateSaleSummary();
+      }
+
+      function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <select name="item_id" class="form-select" required>
+              <option value="">اختر الصنف</option>
+              ${items.map(i => `<option value="${i.id}" data-price="${i.sale_price}">${i.name}</option>`).join('')}
+            </select>
+          </td>
+          <td><input name="requested_qty" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="unit_price" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="bonus_amount" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="discount_amount" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input class="form-control" type="number" step="0.01" value="" readonly /></td>
+          <td class="text-center"><button type="button" class="btn btn-sm btn-danger">حذف</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      const addBtn = document.getElementById('addSaleRow');
+      if (addBtn) addBtn.addEventListener('click', addRow);
+      if (customerSelect) {
+        customerSelect.addEventListener('change', () => {
+          updateSaleSummary();
+        });
+      }
+
+      tbody.addEventListener('change', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('select[name="item_id"]')) {
+          const price = e.target.selectedOptions[0]?.dataset.price || '0';
+          const priceInput = row.querySelector('input[name="unit_price"]');
+          if (priceInput) priceInput.value = price;
+        }
+        updateRowTotal(row);
+      });
+
+      tbody.addEventListener('input', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('input[name="requested_qty"], input[name="unit_price"], input[name="bonus_amount"], input[name="discount_amount"]')) {
+          updateRowTotal(row);
+        }
+      });
+
+      tbody.addEventListener('click', (e) => {
+        if (e.target.matches('.btn-danger')) {
+          e.target.closest('tr').remove();
+          updateSaleSummary();
+        }
+      });
+
+      addRow();
+      updateSaleSummary();
+      table.dataset.ready = '1';
+    }
+
+    function initReturnForm() {
+      const table = document.getElementById('returnItemsTable');
+      if (!table || table.dataset.ready === '1') return;
+      const dataEl = document.getElementById('returnsData');
+      if (!dataEl) return;
+      const items = JSON.parse(dataEl.dataset.items || '[]');
+      const tbody = table.querySelector('tbody');
+
+      function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <select name="item_id" class="form-select" required>
+              <option value="">اختر الصنف</option>
+              ${items.map(i => `<option value="${i.id}" data-price="${i.sale_price}">${i.name}</option>`).join('')}
+            </select>
+          </td>
+          <td><input name="requested_qty" class="form-control" type="number" step="0.01" value="0" /></td>
+          <td><input name="unit_price" class="form-control" type="number" step="0.01" value="0" /></td>
+          <td class="text-center"><button type="button" class="btn btn-sm btn-danger">حذف</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      const addBtn = document.getElementById('addReturnRow');
+      if (addBtn) addBtn.addEventListener('click', addRow);
+
+      tbody.addEventListener('change', (e) => {
+        if (e.target.matches('select[name="item_id"]')) {
+          const price = e.target.selectedOptions[0]?.dataset.price || '0';
+          const priceInput = e.target.closest('tr').querySelector('input[name="unit_price"]');
+          if (priceInput) priceInput.value = price;
+        }
+      });
+
+      tbody.addEventListener('click', (e) => {
+        if (e.target.matches('.btn-danger')) {
+          e.target.closest('tr').remove();
+        }
+      });
+
+      addRow();
+      table.dataset.ready = '1';
+    }
+
+    function initOrderForm() {
+      const table = document.getElementById('orderItemsTable');
+      if (!table || table.dataset.ready === '1') return;
+      const dataEl = document.getElementById('ordersData');
+      if (!dataEl) return;
+      const items = JSON.parse(dataEl.dataset.items || '[]');
+      const tbody = table.querySelector('tbody');
+
+      function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <select name="item_id" class="form-select" required>
+              <option value="">اختر الصنف</option>
+              ${items.map(i => `<option value="${i.id}" data-price="${i.sale_price}">${i.name}</option>`).join('')}
+            </select>
+          </td>
+          <td><input name="qty" class="form-control" type="number" step="0.01" value="0" /></td>
+          <td><input name="unit_price" class="form-control" type="number" step="0.01" value="0" /></td>
+          <td class="text-center"><button type="button" class="btn btn-sm btn-danger">حذف</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      const addBtn = document.getElementById('addOrderRow');
+      if (addBtn) addBtn.addEventListener('click', addRow);
+
+      tbody.addEventListener('change', (e) => {
+        if (e.target.matches('select[name="item_id"]')) {
+          const price = e.target.selectedOptions[0]?.dataset.price || '0';
+          const priceInput = e.target.closest('tr').querySelector('input[name="unit_price"]');
+          if (priceInput) priceInput.value = price;
+        }
+      });
+
+      tbody.addEventListener('click', (e) => {
+        if (e.target.matches('.btn-danger')) {
+          e.target.closest('tr').remove();
+        }
+      });
+
+      addRow();
+      table.dataset.ready = '1';
+    }
+
+    function initSalesForms() {
+      initSaleForm();
+      initReturnForm();
+      initOrderForm();
+    }
+
+    function initPurchaseForm() {
+      const table = document.getElementById('purchaseItemsTable');
+      if (!table || table.dataset.ready === '1') return;
+      const dataEl = document.getElementById('purchasesData');
+      if (!dataEl) return;
+      const items = JSON.parse(dataEl.dataset.items || '[]');
+      const tbody = table.querySelector('tbody');
+      const supplierSelect = document.querySelector('select[name="supplier_id"]');
+      const shippingInput = document.querySelector('input[name="shipping_cost"]');
+      const prevBalanceEl = document.getElementById('supplierPrevBalance');
+      const invoiceTotalEl = document.getElementById('purchaseInvoiceTotal');
+      const newBalanceEl = document.getElementById('supplierNewBalance');
+
+      function getPrevBalance() {
+        const opt = supplierSelect?.selectedOptions?.[0];
+        const raw = opt?.dataset?.balance || '0';
+        const val = Number(raw);
+        return Number.isFinite(val) ? val : 0;
+      }
+
+      function getInvoiceTotal() {
+        let total = 0;
+        tbody.querySelectorAll('input[readonly]').forEach((input) => {
+          const val = Number(input.value || 0);
+          if (Number.isFinite(val)) total += val;
+        });
+        return total;
+      }
+
+      function updatePurchaseSummary() {
+        if (!prevBalanceEl || !invoiceTotalEl || !newBalanceEl) return;
+        const prev = getPrevBalance();
+        const invoice = getInvoiceTotal();
+        prevBalanceEl.textContent = prev.toFixed(2);
+        invoiceTotalEl.textContent = invoice.toFixed(2);
+        newBalanceEl.textContent = (prev + invoice).toFixed(2);
+      }
+
+      function updateRowTotal(row) {
+        const parseNumber = (val) => {
+          if (val === null || val === undefined) return 0;
+          const normalized = String(val)
+            .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
+            .replace(/,/g, ".")
+            .trim();
+          const num = Number(normalized);
+          return Number.isFinite(num) ? num : 0;
+        };
+        const qty = parseNumber(row.querySelector('input[name="qty"]')?.value);
+        const price = parseNumber(row.querySelector('input[name="unit_price"]')?.value);
+        const taxPercent = parseNumber(row.querySelector('input[name="tax_amount"]')?.value);
+        const discBase = parseNumber(row.querySelector('input[name="discount_base"]')?.value);
+        const discExtra = parseNumber(row.querySelector('input[name="discount_extra"]')?.value);
+        const totalInput = row.querySelector('input[readonly]');
+        const base = Math.max(qty * price, 0);
+        const discPercent = Math.max(discBase, 0) + Math.max(discExtra, 0);
+        const discRate = Math.min(discPercent, 100);
+        const discounted = Math.max(base - (base * discRate) / 100, 0);
+        const tax = (discounted * Math.max(taxPercent, 0)) / 100;
+        const total = Math.max(discounted + tax, 0);
+        if (totalInput) totalInput.value = total.toFixed(2);
+        updatePurchaseSummary();
+      }
+
+      function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <select name="item_id" class="form-select" required>
+              <option value="">اختر الصنف</option>
+              ${items.map(i => `<option value="${i.id}" data-price="${i.purchase_price}">${i.name}</option>`).join('')}
+            </select>
+          </td>
+          <td><input name="lot_code" class="form-control" /></td>
+          <td><input name="expiry_month" class="form-control" type="month" /></td>
+          <td><input name="qty" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="bonus_qty" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="tax_amount" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="unit_price" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="discount_base" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="discount_extra" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input class="form-control" type="number" step="0.01" value="0" readonly /></td>
+          <td class="text-center"><button type="button" class="btn btn-sm btn-danger">حذف</button></td>
+        `;
+        tbody.appendChild(tr);
+        updateRowTotal(tr);
+      }
+
+      const addBtn = document.getElementById('addPurchaseRow');
+      if (addBtn) addBtn.addEventListener('click', addRow);
+      if (supplierSelect) supplierSelect.addEventListener('change', updatePurchaseSummary);
+      if (shippingInput) shippingInput.addEventListener('input', updatePurchaseSummary);
+
+      tbody.addEventListener('change', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('select[name="item_id"]')) {
+          const price = e.target.selectedOptions[0]?.dataset.price || '0';
+          const priceInput = row.querySelector('input[name="unit_price"]');
+          if (priceInput && (!priceInput.value || Number(priceInput.value) === 0)) {
+            priceInput.value = price;
+          }
+        }
+        updateRowTotal(row);
+      });
+
+      tbody.addEventListener('input', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('input[name="qty"], input[name="unit_price"], input[name="tax_amount"], input[name="discount_base"], input[name="discount_extra"], input[name="bonus_qty"]')) {
+          updateRowTotal(row);
+        }
+      });
+
+      tbody.addEventListener('change', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('input, select')) {
+          updateRowTotal(row);
+        }
+      });
+
+      tbody.addEventListener('click', (e) => {
+        if (e.target.matches('.btn-danger')) {
+          e.target.closest('tr').remove();
+          updatePurchaseSummary();
+        }
+      });
+
+      addRow();
+      updatePurchaseSummary();
+      table.dataset.ready = '1';
+    }
+
+    function initPurchaseReturnForm() {
+      const table = document.getElementById('purchaseReturnItemsTable');
+      if (!table || table.dataset.ready === '1') return;
+      const dataEl = document.getElementById('purchaseReturnsData');
+      if (!dataEl) return;
+      const items = JSON.parse(dataEl.dataset.items || '[]');
+      const tbody = table.querySelector('tbody');
+
+      function updateRowTotal(row) {
+        const parseNumber = (val) => {
+          if (val === null || val === undefined) return 0;
+          const normalized = String(val)
+            .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
+            .replace(/,/g, ".")
+            .trim();
+          const num = Number(normalized);
+          return Number.isFinite(num) ? num : 0;
+        };
+        const qty = parseNumber(row.querySelector('input[name="qty"]')?.value);
+        const price = parseNumber(row.querySelector('input[name="unit_price"]')?.value);
+        const taxPercent = parseNumber(row.querySelector('input[name="tax_amount"]')?.value);
+        const discBase = parseNumber(row.querySelector('input[name="discount_base"]')?.value);
+        const discExtra = parseNumber(row.querySelector('input[name="discount_extra"]')?.value);
+        const totalInput = row.querySelector('input[readonly]');
+        const base = Math.max(qty * price, 0);
+        const discPercent = Math.max(discBase, 0) + Math.max(discExtra, 0);
+        const discRate = Math.min(discPercent, 100);
+        const discounted = Math.max(base - (base * discRate) / 100, 0);
+        const tax = (discounted * Math.max(taxPercent, 0)) / 100;
+        const total = Math.max(discounted + tax, 0);
+        if (totalInput) totalInput.value = total.toFixed(2);
+      }
+
+      function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <select name="item_id" class="form-select" required>
+              <option value="">اختر الصنف</option>
+              ${items.map(i => `<option value="${i.id}" data-price="${i.purchase_price}">${i.name}</option>`).join('')}
+            </select>
+          </td>
+          <td><input name="lot_code" class="form-control" /></td>
+          <td><input name="qty" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="bonus_qty" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="tax_amount" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="unit_price" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="discount_base" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="discount_extra" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input class="form-control" type="number" step="0.01" value="0" readonly /></td>
+          <td class="text-center"><button type="button" class="btn btn-sm btn-danger">حذف</button></td>
+        `;
+        tbody.appendChild(tr);
+        updateRowTotal(tr);
+      }
+
+      const addBtn = document.getElementById('addPurchaseReturnRow');
+      if (addBtn) addBtn.addEventListener('click', addRow);
+
+      tbody.addEventListener('change', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('select[name="item_id"]')) {
+          const price = e.target.selectedOptions[0]?.dataset.price || '0';
+          const priceInput = row.querySelector('input[name="unit_price"]');
+          if (priceInput && (!priceInput.value || Number(priceInput.value) === 0)) {
+            priceInput.value = price;
+          }
+        }
+        updateRowTotal(row);
+      });
+
+      tbody.addEventListener('input', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('input[name="qty"], input[name="unit_price"], input[name="tax_amount"], input[name="discount_base"], input[name="discount_extra"], input[name="bonus_qty"]')) {
+          updateRowTotal(row);
+        }
+      });
+
+      tbody.addEventListener('change', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('input, select')) {
+          updateRowTotal(row);
+        }
+      });
+
+      tbody.addEventListener('click', (e) => {
+        if (e.target.matches('.btn-danger')) {
+          e.target.closest('tr').remove();
+        }
+      });
+
+      addRow();
+      table.dataset.ready = '1';
+    }
+
+    function initPurchaseOrderForm() {
+      const table = document.getElementById('purchaseOrderItemsTable');
+      if (!table || table.dataset.ready === '1') return;
+      const dataEl = document.getElementById('purchaseOrdersData');
+      if (!dataEl) return;
+      const items = JSON.parse(dataEl.dataset.items || '[]');
+      const tbody = table.querySelector('tbody');
+
+      function updateRowTotal(row) {
+        const parseNumber = (val) => {
+          if (val === null || val === undefined) return 0;
+          const normalized = String(val)
+            .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
+            .replace(/,/g, ".")
+            .trim();
+          const num = Number(normalized);
+          return Number.isFinite(num) ? num : 0;
+        };
+        const qty = parseNumber(row.querySelector('input[name="qty"]')?.value);
+        const price = parseNumber(row.querySelector('input[name="unit_price"]')?.value);
+        const taxPercent = parseNumber(row.querySelector('input[name="tax_amount"]')?.value);
+        const discBase = parseNumber(row.querySelector('input[name="discount_base"]')?.value);
+        const discExtra = parseNumber(row.querySelector('input[name="discount_extra"]')?.value);
+        const totalInput = row.querySelector('input[readonly]');
+        const base = Math.max(qty * price, 0);
+        const discPercent = Math.max(discBase, 0) + Math.max(discExtra, 0);
+        const discRate = Math.min(discPercent, 100);
+        const discounted = Math.max(base - (base * discRate) / 100, 0);
+        const tax = (discounted * Math.max(taxPercent, 0)) / 100;
+        const total = Math.max(discounted + tax, 0);
+        if (totalInput) totalInput.value = total.toFixed(2);
+      }
+
+      function addRow() {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <select name="item_id" class="form-select" required>
+              <option value="">اختر الصنف</option>
+              ${items.map(i => `<option value="${i.id}" data-price="${i.purchase_price}">${i.name}</option>`).join('')}
+            </select>
+          </td>
+          <td><input name="lot_code" class="form-control" /></td>
+          <td><input name="qty" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="bonus_qty" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="tax_amount" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="unit_price" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="discount_base" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input name="discount_extra" class="form-control" type="number" step="0.01" value="" /></td>
+          <td><input class="form-control" type="number" step="0.01" value="0" readonly /></td>
+          <td class="text-center"><button type="button" class="btn btn-sm btn-danger">حذف</button></td>
+        `;
+        tbody.appendChild(tr);
+        updateRowTotal(tr);
+      }
+
+      const addBtn = document.getElementById('addPurchaseOrderRow');
+      if (addBtn) addBtn.addEventListener('click', addRow);
+
+      tbody.addEventListener('change', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('select[name="item_id"]')) {
+          const price = e.target.selectedOptions[0]?.dataset.price || '0';
+          const priceInput = row.querySelector('input[name="unit_price"]');
+          if (priceInput && (!priceInput.value || Number(priceInput.value) === 0)) {
+            priceInput.value = price;
+          }
+        }
+        updateRowTotal(row);
+      });
+
+      tbody.addEventListener('input', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('input[name="qty"], input[name="unit_price"], input[name="tax_amount"], input[name="discount_base"], input[name="discount_extra"], input[name="bonus_qty"]')) {
+          updateRowTotal(row);
+        }
+      });
+
+      tbody.addEventListener('change', (e) => {
+        const row = e.target.closest('tr');
+        if (!row) return;
+        if (e.target.matches('input, select')) {
+          updateRowTotal(row);
+        }
+      });
+
+      tbody.addEventListener('click', (e) => {
+        if (e.target.matches('.btn-danger')) {
+          e.target.closest('tr').remove();
+        }
+      });
+
+      addRow();
+      table.dataset.ready = '1';
+    }
+
+    function initSalesForms() {
+      initSaleForm();
+      initReturnForm();
+      initOrderForm();
+    }
+
+    function initPurchaseForms() {
+      initPurchaseForm();
+      initPurchaseReturnForm();
+      initPurchaseOrderForm();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initSalesForms();
+      initPurchaseForms();
+    });
+
+    document.body.addEventListener('htmx:afterSwap', function (e) {
+      updateTotals(e.target);
+      initSalesForms();
+      initPurchaseForms();
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function (e) {
+      const el = e.detail.elt;
+      if (!el) return;
+      const successMsg = el.dataset.alertSuccess;
+      const failMsg = el.dataset.alertFail;
+      if (!successMsg && !failMsg) return;
+      if (e.detail.successful) {
+        if (successMsg) showPageAlert('success', successMsg);
+      } else {
+        showPageAlert('danger', failMsg || 'حدث خطأ غير متوقع');
+      }
+    });
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

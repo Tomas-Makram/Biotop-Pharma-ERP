@@ -1,0 +1,69 @@
+﻿<div class="card p-4 mb-3">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <h1 class="h4 m-0">تسجيل إضافات لموظف</h1>
+    <div class="muted">تسجيل الإضافات على المرتب وأسبابها</div>
+  </div>
+
+  <hr class="my-4"/>
+
+  <form class="row g-3 align-items-end" hx-post="/reps/additions" hx-target="#tableContainer" hx-swap="innerHTML" hx-on="htmx:afterRequest: this.reset()" data-alert-success="تمت إضافة الإضافة" data-alert-fail="فشل إضافة الإضافة">
+    <div class="col-12 col-md-4">
+      <label class="form-label">الموظف</label>
+      <select name="rep_id" class="form-select" required>
+        <option value="">اختر الموظف</option>
+        {% for r in reps %}
+          <option value="{{ r.id }}">{{ r.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">التاريخ</label>
+      <input name="date" type="date" class="form-control" value="{{ today }}" />
+    </div>
+    <div class="col-12 col-md-2">
+      <label class="form-label">الشهر</label>
+      <select name="month" class="form-select" required>
+        <option value="1" {% if today_month == 1 %}selected{% endif %}>يناير</option>
+        <option value="2" {% if today_month == 2 %}selected{% endif %}>فبراير</option>
+        <option value="3" {% if today_month == 3 %}selected{% endif %}>مارس</option>
+        <option value="4" {% if today_month == 4 %}selected{% endif %}>أبريل</option>
+        <option value="5" {% if today_month == 5 %}selected{% endif %}>مايو</option>
+        <option value="6" {% if today_month == 6 %}selected{% endif %}>يونيو</option>
+        <option value="7" {% if today_month == 7 %}selected{% endif %}>يوليو</option>
+        <option value="8" {% if today_month == 8 %}selected{% endif %}>أغسطس</option>
+        <option value="9" {% if today_month == 9 %}selected{% endif %}>سبتمبر</option>
+        <option value="10" {% if today_month == 10 %}selected{% endif %}>أكتوبر</option>
+        <option value="11" {% if today_month == 11 %}selected{% endif %}>نوفمبر</option>
+        <option value="12" {% if today_month == 12 %}selected{% endif %}>ديسمبر</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-2">
+      <label class="form-label">السنة</label>
+      <input name="year" type="number" class="form-control" value="{{ today_year }}" />
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">وذلك عن</label>
+      <input name="reason" class="form-control" />
+    </div>
+    <div class="col-12 col-md-2">
+      <label class="form-label">المبلغ</label>
+      <input name="amount" type="number" step="0.01" class="form-control" value="0" />
+    </div>
+    <div class="col-12 col-md-6">
+      <label class="form-label">ملاحظات</label>
+      <input name="notes" class="form-control" />
+    </div>
+    <div class="col-12 col-md-2 d-grid">
+      <button class="btn btn-success" type="submit">حفظ</button>
+    </div>
+  </form>
+</div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="p-3">
+    <h2 class="h5 m-0">قائمة الإضافات</h2>
+  </div>
+  <div id="tableContainer">
+    {% include "reps/additions_table.html" %}
+  </div>
+</div>

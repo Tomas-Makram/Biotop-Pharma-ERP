@@ -1,0 +1,46 @@
+﻿<div id="opening-stock-table" data-total="{{ openings|length }}">
+  {% if message %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">{{ message }}</div>
+    </div>
+  {% endif %}
+  {% if openings|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد أرصدة افتتاحية بعد.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>التاريخ</th>
+            <th>المخزن</th>
+            <th>عدد الأصناف</th>
+            <th>ملاحظات</th>
+            <th style="width: 220px;" class="text-end">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for op in openings %}
+          <tr>
+            <td>{{ op.id }}</td>
+            <td>{{ op.date.strftime('%Y-%m-%d') if op.date else '-' }}</td>
+            <td>{{ op.location.name if op.location else '-' }}</td>
+            <td>{{ op.lines|length }}</td>
+            <td>{{ op.notes or '-' }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-secondary" href="/opening-stock/{{ op.id }}/edit">
+                تعديل
+              </a>
+              <button class="btn btn-sm btn-danger" hx-delete="/opening-stock/{{ op.id }}" hx-target="#tableContainer" hx-confirm="هل أنت متأكد من الحذف؟" data-alert-success="تم حذف الرصيد" data-alert-fail="فشل حذف الرصيد">
+                حذف
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

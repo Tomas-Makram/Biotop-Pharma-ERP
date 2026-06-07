@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}التحويلات{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h3 m-0">التحويلات</h1>
+  <a class="btn btn-primary" href="/transfers/new">تحويل جديد</a>
+</div>
+
+<div id="pageAlert" class="alert d-none"></div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="p-3">
+    <h2 class="h5 m-0">قائمة التحويلات</h2>
+  </div>
+  <div id="tableContainer">
+    {% include "transfers/table.html" %}
+  </div>
+</div>
+{% endblock %}

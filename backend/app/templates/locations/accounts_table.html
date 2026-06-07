@@ -1,0 +1,58 @@
+﻿<div id="accounts-table" data-total="{{ transactions|length }}">
+  <div class="p-3 d-flex gap-3 flex-wrap">
+    <div class="badge bg-secondary">الرصيد الافتتاحي الحالي: {{ opening_balance }}</div>
+    <div class="badge bg-primary">الرصيد: {{ totals.balance }}</div>
+    <div class="badge bg-success">إجمالي المديونية: {{ totals.total_debt }}</div>
+    <div class="badge bg-warning text-dark">إجمالي المسدد: {{ totals.total_paid }}</div>
+    {% if selected_entity_id %}
+      <a class="btn btn-sm btn-outline-secondary" href="/locations?print_statement=1&entity_id={{ selected_entity_id }}&start_date={{ start_date }}&end_date={{ end_date }}" target="_blank">طباعة كشف حساب</a>
+    {% endif %}
+    {% if last_receipt_id %}
+      <a class="btn btn-sm btn-outline-primary" href="/locations?print_receipt_tx={{ last_receipt_id }}" target="_blank">طباعة إيصال التحصيل</a>
+    {% endif %}
+  </div>
+  {% if message %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">{{ message }}</div>
+    </div>
+  {% endif %}
+  {% if transactions|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد حركات لهذه الجهة.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>التاريخ</th>
+            <th>النوع</th>
+            <th>المبلغ</th>
+            <th>ملاحظات</th>
+            <th style="width: 160px;" class="text-end">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in transactions %}
+          <tr>
+            <td>{{ t.id }}</td>
+            <td>{{ t.date.strftime('%Y-%m-%d') if t.date else '-' }}</td>
+            <td>{{ t.type }}</td>
+            <td>{{ t.amount }}</td>
+            <td>{{ t.notes or '-' }}</td>
+            <td class="text-end">
+              {% if t.type == 'payment' %}
+                <a class="btn btn-sm btn-outline-primary" href="/locations?print_receipt_tx={{ t.id }}" target="_blank">طباعة إيصال</a>
+              {% endif %}
+              <button class="btn btn-sm btn-danger" hx-delete="/locations/accounts/tx/{{ t.id }}" hx-target="#accountsTableContainer" hx-confirm="هل أنت متأكد من الحذف؟" data-alert-success="تم حذف الحركة" data-alert-fail="فشل حذف الحركة">
+                حذف
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

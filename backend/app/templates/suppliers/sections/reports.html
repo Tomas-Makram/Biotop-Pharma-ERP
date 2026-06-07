@@ -1,0 +1,538 @@
+<div class="vendor-reports" dir="rtl">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div>
+      <div class="h5 m-0">تقارير الموردين</div>
+      <div class="muted">تقارير حركة الموردين والحسابات</div>
+    </div>
+    <div class="d-flex gap-2 no-print">
+      <button id="vendorsReportsFetch" class="btn btn-primary">عرض</button>
+      <button id="vendorsReportsPrint" class="btn btn-outline-secondary">طباعة</button>
+    </div>
+  </div>
+
+  <div class="reports-bar no-print">
+    <div class="reports-scroll" id="vendorsReportsBar">
+      <button class="report-tab" data-report="vendor-activity-volume">حجم التعامل مع مورد</button>
+      <button class="report-tab active" data-report="vendors-balances">أرصدة الموردين</button>
+      <button class="report-tab" data-report="vendor-statement">كشف حساب مورد</button>
+      <button class="report-tab" data-report="vendors-statement">كشف حساب الموردين</button>
+    </div>
+  </div>
+
+  <div class="card p-3 mb-3 no-print" id="vendorsFiltersPanel">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-md-3 filter-block" data-filter="date">
+        <label class="form-label">من تاريخ</label>
+        <input id="filterDateFrom" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="date">
+        <label class="form-label">إلى تاريخ</label>
+        <input id="filterDateTo" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="as-of">
+        <label class="form-label">في تاريخ</label>
+        <input id="filterAsOf" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="vendor">
+        <label class="form-label">المورد</label>
+        <select id="filterVendor" class="form-select" data-no-search>
+          <option value="">اختر المورد</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="vendor-range">
+        <label class="form-label">من مورد</label>
+        <select id="filterVendorFrom" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="vendor-range">
+        <label class="form-label">إلى مورد</label>
+        <select id="filterVendorTo" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="company">
+        <label class="form-label">الشركة</label>
+        <select id="filterCompany" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="warehouse">
+        <label class="form-label">المخزن</label>
+        <select id="filterWarehouse" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="invoice">
+        <label class="form-label">نوع الفاتورة</label>
+        <select id="filterInvoiceType" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="search">
+        <label class="form-label">بحث</label>
+        <input id="filterSearchText" type="text" class="form-control" />
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="sort">
+        <label class="form-label">الترتيب</label>
+        <select id="filterSortBy" class="form-select" data-no-search>
+          <option value="date">حسب التاريخ</option>
+          <option value="doc_no">حسب المستند</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="sort">
+        <label class="form-label">اتجاه الترتيب</label>
+        <select id="filterSortDir" class="form-select" data-no-search>
+          <option value="asc">تصاعدي</option>
+          <option value="desc">تنازلي</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="balance-side">
+        <label class="form-label">اتجاه الرصيد</label>
+        <select id="filterBalanceSide" class="form-select" data-no-search>
+          <option value="all">الكل</option>
+          <option value="debit">مدين</option>
+          <option value="credit">دائن</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="group">
+        <label class="form-label">التجميع</label>
+        <select id="filterGroupBy" class="form-select" data-no-search>
+          <option value="">بدون</option>
+          <option value="vendor">مورد</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="pageAlert" class="alert alert-danger d-none" role="alert"></div>
+  <div id="loadingBox" class="alert alert-info d-none" role="alert">جاري تحميل التقرير...</div>
+
+  <div id="print-area" class="print-area">
+    <div class="print-header">
+      <div class="fw-semibold" data-print-title>عنوان التقرير</div>
+      <div class="small muted" data-print-date></div>
+      <div class="small muted" data-print-filters></div>
+    </div>
+    <div id="activityPanels" class="row g-3 mb-3 d-none">
+      <div class="col-12 col-lg-8">
+        <div class="card p-3 h-100">
+          <div class="fw-semibold mb-3">تحليل التعامل</div>
+          <div class="row g-2">
+            <div class="col-12 col-md-6">
+              <div class="analysis-item">
+                <span>مشتريات</span>
+                <span data-analysis="purchases_amount">0.00</span>
+              </div>
+              <div class="analysis-item">
+                <span>مرتجعات مشتريات</span>
+                <span data-analysis="purchase_returns_amount">0.00</span>
+              </div>
+              <div class="analysis-item">
+                <span>تحصيلات نقدية</span>
+                <span data-analysis="cash_receipts_amount">0.00</span>
+              </div>
+            </div>
+            <div class="col-12 col-md-6">
+              <div class="analysis-item">
+                <span>مدفوعات نقدية</span>
+                <span data-analysis="cash_payments_amount">0.00</span>
+              </div>
+              <div class="analysis-item">
+                <span>خصومات</span>
+                <span data-analysis="discounts_amount">0.00</span>
+              </div>
+              <div class="analysis-item">
+                <span>إضافات</span>
+                <span data-analysis="additions_amount">0.00</span>
+              </div>
+              <div class="analysis-item">
+                <span>رصيد أول المدة</span>
+                <span data-analysis="opening_balance">0.00</span>
+              </div>
+              <div class="analysis-item">
+                <span>رصيد آخر المدة</span>
+                <span data-analysis="ending_balance">0.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        <div class="card p-3 h-100">
+          <div class="fw-semibold mb-3">بيانات الحساب</div>
+          <div class="analysis-item"><span>رقم الحساب</span><span data-account="account_no">-</span></div>
+          <div class="analysis-item"><span>المورد</span><span data-account="vendor_name">-</span></div>
+          <div class="analysis-item"><span>الحالة</span><span data-account="status">-</span></div>
+          <div class="analysis-item"><span>الرصيد الحالي</span><span data-account="current_balance">0.00</span></div>
+          <div class="analysis-item"><span>وصف الرصيد</span><span data-account="balance_desc">-</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-3">
+      <div class="fw-semibold mb-3" id="reportTitle">أرصدة الموردين</div>
+      <div class="table-responsive">
+        <table class="table table-bordered mb-0">
+          <thead class="table-light">
+            <tr id="reportHead">
+              <th>العمود</th>
+            </tr>
+          </thead>
+          <tbody id="reportBody">
+            <tr>
+              <td class="text-center muted">اضغط عرض لإظهار البيانات.</td>
+            </tr>
+          </tbody>
+          <tfoot id="reportFooter" class="d-none">
+            <tr class="table-light" id="reportFooterRow"></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .reports-bar {
+    background: #f3f5f9;
+    border-radius: 12px;
+    padding: 8px;
+    overflow: hidden;
+  }
+  .reports-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .report-tab {
+    border: 1px solid #d0d7de;
+    background: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .report-tab.active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+  }
+  .filter-block { display: none; }
+  .filter-block.active { display: block; }
+  .analysis-item {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #e2e6ea;
+    padding: 6px 0;
+  }
+  .analysis-item:last-child { border-bottom: 0; }
+
+  @media print {
+    body { background: #fff !important; }
+    .no-print { display: none !important; }
+    #print-area { display: block !important; }
+    #print-area * { direction: rtl; text-align: right; }
+  }
+</style>
+
+<script>
+  (function () {
+    const reportConfig = {
+      "vendor-activity-volume": {
+        title_ar: "حجم التعامل مع مورد",
+        filters: ["date", "vendor", "company"],
+        columns: [
+          { key: "metric", label_ar: "البند" },
+          { key: "value", label_ar: "القيمة" }
+        ]
+      },
+      "vendors-balances": {
+        title_ar: "أرصدة الموردين",
+        filters: ["date", "vendor-range", "balance-side", "as-of"],
+        columns: [
+          { key: "vendor_id", label_ar: "كود المورد" },
+          { key: "vendor_name", label_ar: "اسم المورد" },
+          { key: "opening_balance", label_ar: "رصيد أول المدة" },
+          { key: "debit", label_ar: "مدين" },
+          { key: "credit", label_ar: "دائن" },
+          { key: "closing_balance", label_ar: "رصيد آخر المدة" },
+          { key: "balance_desc", label_ar: "وصف الرصيد" }
+        ],
+        totals: ["opening_sum", "debit_sum", "credit_sum", "closing_sum", "vendors_count"]
+      },
+      "vendor-statement": {
+        title_ar: "كشف حساب مورد",
+        filters: ["date", "vendor", "invoice", "warehouse", "company", "sort"],
+        columns: [
+          { key: "doc_no", label_ar: "المستند" },
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "description", label_ar: "البيان" },
+          { key: "warehouse_name", label_ar: "المخزن" },
+          { key: "debit", label_ar: "مدين" },
+          { key: "credit", label_ar: "دائن" },
+          { key: "balance", label_ar: "الرصيد" }
+        ],
+        totals: ["debit_sum", "credit_sum", "ending_balance", "docs_count"]
+      },
+      "vendors-statement": {
+        title_ar: "كشف حساب الموردين",
+        filters: ["date", "vendor-range", "group"],
+        columns: [
+          { key: "vendor_name", label_ar: "المورد" },
+          { key: "doc_no", label_ar: "المستند" },
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "description", label_ar: "البيان" },
+          { key: "debit", label_ar: "مدين" },
+          { key: "credit", label_ar: "دائن" },
+          { key: "balance", label_ar: "الرصيد" }
+        ],
+        totals: ["debit_sum", "credit_sum", "ending_balance", "vendors_count", "docs_count"]
+      }
+    };
+
+    const state = { reportKey: "vendors-balances" };
+    const tabs = document.querySelectorAll(".report-tab");
+    const reportTitle = document.getElementById("reportTitle");
+    const reportHead = document.getElementById("reportHead");
+    const reportBody = document.getElementById("reportBody");
+    const reportFooter = document.getElementById("reportFooter");
+    const reportFooterRow = document.getElementById("reportFooterRow");
+    const filterBlocks = document.querySelectorAll(".filter-block");
+    const pageAlert = document.getElementById("pageAlert");
+    const loadingBox = document.getElementById("loadingBox");
+    const activityPanels = document.getElementById("activityPanels");
+
+    const filterDateFrom = document.getElementById("filterDateFrom");
+    const filterDateTo = document.getElementById("filterDateTo");
+    const filterAsOf = document.getElementById("filterAsOf");
+    const filterVendor = document.getElementById("filterVendor");
+    const filterVendorFrom = document.getElementById("filterVendorFrom");
+    const filterVendorTo = document.getElementById("filterVendorTo");
+    const filterCompany = document.getElementById("filterCompany");
+    const filterWarehouse = document.getElementById("filterWarehouse");
+    const filterInvoiceType = document.getElementById("filterInvoiceType");
+    const filterSearchText = document.getElementById("filterSearchText");
+    const filterSortBy = document.getElementById("filterSortBy");
+    const filterSortDir = document.getElementById("filterSortDir");
+    const filterBalanceSide = document.getElementById("filterBalanceSide");
+    const filterGroupBy = document.getElementById("filterGroupBy");
+
+    function showAlert(message) {
+      pageAlert.textContent = message;
+      pageAlert.classList.remove("d-none");
+    }
+
+    function hideAlert() {
+      pageAlert.classList.add("d-none");
+    }
+
+    function setLoading(isLoading) {
+      loadingBox.classList.toggle("d-none", !isLoading);
+    }
+
+    function formatNumber(value) {
+      const num = Number(value || 0);
+      return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function applyFiltersUI() {
+      const config = reportConfig[state.reportKey];
+      filterBlocks.forEach((block) => {
+        const key = block.getAttribute("data-filter");
+        block.classList.toggle("active", config.filters.includes(key));
+      });
+      activityPanels.classList.toggle("d-none", state.reportKey !== "vendor-activity-volume");
+    }
+
+    function renderTable(data) {
+      const config = reportConfig[state.reportKey];
+      const columns = data.columns && data.columns.length ? data.columns : config.columns;
+
+      reportTitle.textContent = data.title_ar || config.title_ar;
+      reportHead.innerHTML = "";
+      reportBody.innerHTML = "";
+
+      columns.forEach((col) => {
+        const th = document.createElement("th");
+        th.textContent = col.label_ar || col.key;
+        reportHead.appendChild(th);
+      });
+
+      const rows = data.rows || [];
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="${columns.length}" class="text-center muted">لا توجد بيانات.</td>`;
+        reportBody.appendChild(tr);
+      } else {
+        rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = columns.map((col) => {
+            const value = row[col.key];
+            if (typeof value === "number") {
+              return `<td>${formatNumber(value)}</td>`;
+            }
+            return `<td>${value ?? ""}</td>`;
+          }).join("");
+          reportBody.appendChild(tr);
+        });
+      }
+
+      const totals = data.totals || {};
+      if (Object.keys(totals).length) {
+        reportFooter.classList.remove("d-none");
+        reportFooterRow.innerHTML = columns.map((col, idx) => {
+          if (idx === 0) return `<th>الإجمالي</th>`;
+          if (col.key === "debit_total" && totals.debit_sum !== undefined) {
+            return `<th>${formatNumber(totals.debit_sum)}</th>`;
+          }
+          if (col.key === "credit_total" && totals.credit_sum !== undefined) {
+            return `<th>${formatNumber(totals.credit_sum)}</th>`;
+          }
+          if (col.key === "net_balance" && totals.ending_balance !== undefined) {
+            return `<th>${formatNumber(totals.ending_balance)}</th>`;
+          }
+          if (col.key === "opening_balance" && totals.opening_sum !== undefined) {
+            return `<th>${formatNumber(totals.opening_sum)}</th>`;
+          }
+          if (col.key === "debit" && totals.debit_sum !== undefined) {
+            return `<th>${formatNumber(totals.debit_sum)}</th>`;
+          }
+          if (col.key === "credit" && totals.credit_sum !== undefined) {
+            return `<th>${formatNumber(totals.credit_sum)}</th>`;
+          }
+          if (col.key === "closing_balance" && totals.closing_sum !== undefined) {
+            return `<th>${formatNumber(totals.closing_sum)}</th>`;
+          }
+          if (col.key === "balance" && totals.ending_balance !== undefined) {
+            return `<th>${formatNumber(totals.ending_balance)}</th>`;
+          }
+          if (col.key === "amount" && totals.amount_sum !== undefined) {
+            return `<th>${formatNumber(totals.amount_sum)}</th>`;
+          }
+          if (col.key === "vendor_name" && totals.vendors_count !== undefined) {
+            return `<th>${totals.vendors_count}</th>`;
+          }
+          return "<th></th>";
+        }).join("");
+      } else {
+        reportFooter.classList.add("d-none");
+        reportFooterRow.innerHTML = "";
+      }
+
+      const sections = data.sections || {};
+      if (state.reportKey === "vendor-activity-volume") {
+        const analysis = sections.analysis || {};
+        document.querySelectorAll("[data-analysis]").forEach((el) => {
+          const key = el.getAttribute("data-analysis");
+          const value = analysis[key] ?? 0;
+          el.textContent = typeof value === "number" ? formatNumber(value) : value;
+        });
+        const accountInfo = sections.account_info || {};
+        document.querySelectorAll("[data-account]").forEach((el) => {
+          const key = el.getAttribute("data-account");
+          const value = accountInfo[key] ?? "-";
+          el.textContent = typeof value === "number" ? formatNumber(value) : value;
+        });
+      }
+    }
+
+    function buildPayload() {
+      return {
+        date_from: filterDateFrom.value || null,
+        date_to: filterDateTo.value || null,
+        as_of_date: filterAsOf.value || null,
+        vendor_id: filterVendor.value || null,
+        vendor_from_id: filterVendorFrom.value || null,
+        vendor_to_id: filterVendorTo.value || null,
+        company_id: filterCompany.value || null,
+        warehouse_id: filterWarehouse.value || null,
+        invoice_type: filterInvoiceType.value || null,
+        sort_by: filterSortBy.value || "date",
+        sort_dir: filterSortDir.value || "asc",
+        balance_side: filterBalanceSide.value || "all",
+        search_text: filterSearchText.value || null,
+        group_by: filterGroupBy.value || null
+      };
+    }
+
+    async function fetchReport() {
+      hideAlert();
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/vendors/reports/${state.reportKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildPayload())
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "حدث خطأ أثناء جلب التقرير.");
+        renderTable(data);
+      } catch (err) {
+        showAlert(err.message || "تعذر تحميل التقرير.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function loadLookups() {
+      const [vendorsRes, companiesRes, warehousesRes, invoiceTypesRes] = await Promise.all([
+        fetch("/api/lookups/vendors"),
+        fetch("/api/lookups/companies"),
+        fetch("/api/lookups/warehouses"),
+        fetch("/api/lookups/invoice-types")
+      ]);
+
+      const vendors = vendorsRes.ok ? await vendorsRes.json() : [];
+      const companies = companiesRes.ok ? await companiesRes.json() : [];
+      const warehouses = warehousesRes.ok ? await warehousesRes.json() : [];
+      const invoiceTypes = invoiceTypesRes.ok ? await invoiceTypesRes.json() : [];
+
+      vendors.forEach((vend) => {
+        const opt = document.createElement("option");
+        opt.value = vend.id;
+        opt.textContent = vend.name;
+        filterVendor.appendChild(opt);
+        const optFrom = opt.cloneNode(true);
+        const optTo = opt.cloneNode(true);
+        filterVendorFrom.appendChild(optFrom);
+        filterVendorTo.appendChild(optTo);
+      });
+      companies.forEach((comp) => {
+        const opt = document.createElement("option");
+        opt.value = comp.id;
+        opt.textContent = comp.name;
+        filterCompany.appendChild(opt);
+      });
+      warehouses.forEach((wh) => {
+        const opt = document.createElement("option");
+        opt.value = wh.id;
+        opt.textContent = wh.name;
+        filterWarehouse.appendChild(opt);
+      });
+      invoiceTypes.forEach((inv) => {
+        const opt = document.createElement("option");
+        opt.value = inv.id;
+        opt.textContent = inv.name;
+        filterInvoiceType.appendChild(opt);
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        state.reportKey = tab.dataset.report;
+        applyFiltersUI();
+        renderTable({ title_ar: reportConfig[state.reportKey].title_ar, columns: reportConfig[state.reportKey].columns, rows: [] });
+      });
+    });
+
+    document.getElementById("vendorsReportsFetch").addEventListener("click", fetchReport);
+    document.getElementById("vendorsReportsPrint").addEventListener("click", () => window.printReport ? window.printReport() : window.print());
+
+    applyFiltersUI();
+    loadLookups().catch(() => showAlert("تعذر تحميل بيانات القوائم."));
+  })();
+</script>

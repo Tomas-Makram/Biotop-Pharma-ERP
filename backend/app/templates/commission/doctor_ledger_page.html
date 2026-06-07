@@ -1,0 +1,113 @@
+﻿{% extends "base.html" %}
+
+{% block title %}كشف حساب الأطباء{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h3 m-0">كشف حساب الأطباء</h1>
+  <a class="btn btn-outline-secondary" href="/commission/rules">قواعد العمولة</a>
+</div>
+
+<div id="pageAlert" class="alert d-none"></div>
+
+<div class="card p-4 mb-3">
+  <form class="row g-3 align-items-end" hx-get="/commission/ledger/table" hx-target="#tableContainer" hx-swap="innerHTML">
+    <div class="col-12 col-md-4">
+      <label class="form-label">الطبيب</label>
+      <select name="doctor_id" class="form-select" required>
+        <option value="">اختر الطبيب</option>
+        {% for d in doctors %}
+          <option value="{{ d.id }}">{{ d.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">من تاريخ</label>
+      <input name="start_date" type="date" class="form-control" />
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">إلى تاريخ</label>
+      <input name="end_date" type="date" class="form-control" />
+    </div>
+    <div class="col-12 col-md-2 d-grid">
+      <button class="btn btn-primary">عرض</button>
+    </div>
+  </form>
+</div>
+
+<div class="card p-4 mb-3">
+  <h2 class="h5">صرف عمولة للطبيب</h2>
+  <form class="row g-3 align-items-end" hx-post="/commission/ledger/payment" hx-target="#tableContainer" hx-swap="innerHTML" hx-on="htmx:afterRequest: this.reset()" data-alert-success="تم صرف العمولة" data-alert-fail="فشل صرف العمولة">
+    <div class="col-12 col-md-4">
+      <label class="form-label">الطبيب</label>
+      <select name="doctor_id" class="form-select" required>
+        <option value="">اختر الطبيب</option>
+        {% for d in doctors %}
+          <option value="{{ d.id }}">{{ d.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">التاريخ</label>
+      <input name="date" type="date" class="form-control" />
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">المبلغ</label>
+      <input name="amount" class="form-control" type="number" step="0.01" min="0.01" value="0" />
+    </div>
+    <div class="col-12 col-md-2">
+      <label class="form-label">ملاحظات</label>
+      <input name="notes" class="form-control" />
+    </div>
+    <div class="col-12 col-md-2 d-grid">
+      <button class="btn btn-success" type="submit">إضافة صرف</button>
+    </div>
+  </form>
+</div>
+
+<div class="card p-4 mb-3">
+  <h2 class="h5">تسوية</h2>
+  <form class="row g-3 align-items-end" hx-post="/commission/ledger/adjustment" hx-target="#tableContainer" hx-swap="innerHTML" hx-on="htmx:afterRequest: this.reset()" data-alert-success="تمت إضافة التعديل" data-alert-fail="فشل إضافة التعديل">
+    <div class="col-12 col-md-4">
+      <label class="form-label">الطبيب</label>
+      <select name="doctor_id" class="form-select" required>
+        <option value="">اختر الطبيب</option>
+        {% for d in doctors %}
+          <option value="{{ d.id }}">{{ d.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">التاريخ</label>
+      <input name="date" type="date" class="form-control" />
+    </div>
+    <div class="col-12 col-md-2">
+      <label class="form-label">المبلغ</label>
+      <input name="amount" class="form-control" type="number" step="0.01" min="0.01" value="0" />
+    </div>
+    <div class="col-12 col-md-2">
+      <label class="form-label">الاتجاه</label>
+      <select name="direction" class="form-select">
+        <option value="+">إضافة</option>
+        <option value="-">خصم</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">ملاحظات</label>
+      <input name="notes" class="form-control" />
+    </div>
+    <div class="col-12 col-md-2 d-grid">
+      <button class="btn btn-warning" type="submit">إضافة تسوية</button>
+    </div>
+  </form>
+</div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="p-3">
+    <h2 class="h5 m-0">الحركات</h2>
+  </div>
+  <div id="tableContainer">
+    {% include "commission/doctor_ledger_table.html" %}
+  </div>
+</div>
+{% endblock %}

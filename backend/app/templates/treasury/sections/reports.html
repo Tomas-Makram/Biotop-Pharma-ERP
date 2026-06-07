@@ -1,0 +1,378 @@
+﻿<div class="treasury-reports" dir="rtl">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div>
+      <div class="h5 m-0">تقارير الخزنة</div>
+      <div class="muted">عرض تقارير حركة الخزنة</div>
+    </div>
+    <div class="d-flex gap-2 no-print">
+      <button id="treasuryFetch" class="btn btn-primary">عرض</button>
+      <button id="treasuryPrint" class="btn btn-outline-secondary">طباعة</button>
+    </div>
+  </div>
+
+  <div class="reports-bar no-print">
+    <div class="reports-scroll" id="reportsBar">
+      <button class="report-tab active" data-report="cash-receipts-list">قائمة أذون إستلام نقدية</button>
+      <button class="report-tab" data-report="cash-payments-list">قائمة أذون دفع نقدية</button>
+      <button class="report-tab" data-report="safe-movement">حركة خزنة</button>
+      <button class="report-tab" data-report="safes-movement">حركة الخزائن</button>
+      <button class="report-tab" data-report="safe-register-employees">حركة سجل الخزنة - موظفين</button>
+      <button class="report-tab" data-report="safes-summary">تقرير الخزائن</button>
+    </div>
+  </div>
+
+  <div class="card p-3 mb-3 no-print" id="filtersPanel">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-md-4 filter-block" data-filter="date">
+        <label class="form-label">من تاريخ</label>
+        <input id="filterDateFrom" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="date">
+        <label class="form-label">إلى تاريخ</label>
+        <input id="filterDateTo" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="safe">
+        <label class="form-label">الخزنة</label>
+        <select id="filterSafe" class="form-select" data-no-search>
+          <option value="">كل الخزن</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="doc">
+        <label class="form-label">رقم الإذن</label>
+        <input id="filterDocNo" type="text" class="form-control" />
+      </div>
+      <div class="col-12 col-md-4 filter-block" data-filter="employee">
+        <label class="form-label">الموظف</label>
+        <select id="filterEmployee" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="pageAlert" class="alert alert-danger d-none" role="alert"></div>
+  <div id="loadingBox" class="alert alert-info d-none" role="alert">جاري تحميل التقرير...</div>
+
+  <div id="print-area" class="print-area">
+    <div class="print-header">
+      <div class="fw-semibold" data-print-title>عنوان التقرير</div>
+      <div class="small muted" data-print-date></div>
+      <div class="small muted" data-print-filters></div>
+    </div>
+    <div class="card p-3">
+      <div class="fw-semibold mb-3" id="reportTitle">قائمة أذون إستلام نقدية</div>
+      <div class="table-responsive">
+        <table class="table table-bordered mb-0">
+          <thead class="table-light">
+            <tr id="reportHead">
+              <th>العمود</th>
+            </tr>
+          </thead>
+          <tbody id="reportBody">
+            <tr>
+              <td class="text-center muted">اضغط عرض لإظهار البيانات.</td>
+            </tr>
+          </tbody>
+          <tfoot id="reportFooter" class="d-none">
+            <tr class="table-light" id="reportFooterRow"></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .reports-bar {
+    background: #f3f5f9;
+    border-radius: 12px;
+    padding: 8px;
+    overflow: hidden;
+  }
+  .reports-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .report-tab {
+    border: 1px solid #d0d7de;
+    background: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .report-tab.active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+  }
+  .filter-block { display: none; }
+  .filter-block.active { display: block; }
+
+  @media print {
+    body { background: #fff !important; }
+    .no-print { display: none !important; }
+    #print-area { display: block !important; }
+    #print-area * { direction: rtl; text-align: right; }
+  }
+</style>
+
+<script>
+  (function () {
+    const reportConfig = {
+      "cash-receipts-list": {
+        title_ar: "قائمة أذون إستلام نقدية",
+        filters: ["date", "safe", "doc"],
+        columns: [
+          { key: "doc_no", label_ar: "رقم الإذن" },
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "safe_name", label_ar: "الخزنة" },
+          { key: "received_from", label_ar: "المستلم/العميل" },
+          { key: "description", label_ar: "البيان" },
+          { key: "amount", label_ar: "المبلغ" },
+          { key: "reference", label_ar: "طريقة الدفع/مرجع" }
+        ],
+        totals: ["amount_sum"]
+      },
+      "cash-payments-list": {
+        title_ar: "قائمة أذون دفع نقدية",
+        filters: ["date", "safe", "doc"],
+        columns: [
+          { key: "doc_no", label_ar: "رقم الإذن" },
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "safe_name", label_ar: "الخزنة" },
+          { key: "paid_to", label_ar: "المستفيد" },
+          { key: "description", label_ar: "البيان" },
+          { key: "amount", label_ar: "المبلغ" },
+          { key: "category", label_ar: "التصنيف" }
+        ],
+        totals: ["amount_sum"]
+      },
+      "safe-movement": {
+        title_ar: "حركة خزنة",
+        filters: ["date", "safe"],
+        columns: [
+          { key: "txn_date", label_ar: "التاريخ" },
+          { key: "doc_no", label_ar: "رقم المستند" },
+          { key: "description", label_ar: "البيان" },
+          { key: "amount_in", label_ar: "داخل" },
+          { key: "amount_out", label_ar: "خارج" },
+          { key: "balance", label_ar: "الرصيد" }
+        ],
+        totals: ["total_in", "total_out", "ending_balance"]
+      },
+      "safes-movement": {
+        title_ar: "حركة الخزائن",
+        filters: ["date", "safe"],
+        columns: [
+          { key: "transfer_date", label_ar: "التاريخ" },
+          { key: "transfer_no", label_ar: "رقم التحويل" },
+          { key: "safe_from", label_ar: "من خزنة" },
+          { key: "safe_to", label_ar: "إلى خزنة" },
+          { key: "amount", label_ar: "المبلغ" },
+          { key: "notes", label_ar: "ملاحظات" }
+        ],
+        totals: ["amount_sum"]
+      },
+      "safe-register-employees": {
+        title_ar: "حركة سجل الخزنة - موظفين",
+        filters: ["date", "safe", "employee"],
+        columns: [
+          { key: "txn_date", label_ar: "التاريخ" },
+          { key: "employee_name", label_ar: "الموظف" },
+          { key: "txn_type", label_ar: "نوع الحركة" },
+          { key: "doc_no", label_ar: "رقم المستند" },
+          { key: "amount_in", label_ar: "داخل" },
+          { key: "amount_out", label_ar: "خارج" },
+          { key: "balance", label_ar: "الرصيد" }
+        ],
+        totals: ["total_in", "total_out", "ending_balance"]
+      },
+      "safes-summary": {
+        title_ar: "تقرير الخزائن",
+        filters: ["date", "safe"],
+        columns: [
+          { key: "safe_name", label_ar: "الخزنة" },
+          { key: "opening_balance", label_ar: "رصيد أول المدة" },
+          { key: "total_in", label_ar: "إجمالي داخل" },
+          { key: "total_out", label_ar: "إجمالي خارج" },
+          { key: "current_balance", label_ar: "الرصيد الحالي" }
+        ]
+      }
+    };
+
+    const state = { reportKey: "cash-receipts-list" };
+    const tabs = document.querySelectorAll(".report-tab");
+    const reportTitle = document.getElementById("reportTitle");
+    const reportHead = document.getElementById("reportHead");
+    const reportBody = document.getElementById("reportBody");
+    const reportFooter = document.getElementById("reportFooter");
+    const reportFooterRow = document.getElementById("reportFooterRow");
+    const filterBlocks = document.querySelectorAll(".filter-block");
+    const pageAlert = document.getElementById("pageAlert");
+    const loadingBox = document.getElementById("loadingBox");
+
+    const filterDateFrom = document.getElementById("filterDateFrom");
+    const filterDateTo = document.getElementById("filterDateTo");
+    const filterSafe = document.getElementById("filterSafe");
+    const filterDocNo = document.getElementById("filterDocNo");
+    const filterEmployee = document.getElementById("filterEmployee");
+
+    function showAlert(message) {
+      pageAlert.textContent = message;
+      pageAlert.classList.remove("d-none");
+    }
+
+    function hideAlert() {
+      pageAlert.classList.add("d-none");
+    }
+
+    function setLoading(isLoading) {
+      loadingBox.classList.toggle("d-none", !isLoading);
+    }
+
+    function formatNumber(value) {
+      const num = Number(value || 0);
+      return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function applyFiltersUI() {
+      const config = reportConfig[state.reportKey];
+      filterBlocks.forEach((block) => {
+        const key = block.getAttribute("data-filter");
+        block.classList.toggle("active", config.filters.includes(key));
+      });
+    }
+
+    function renderTable(data) {
+      const config = reportConfig[state.reportKey];
+      const columns = data.columns && data.columns.length ? data.columns : config.columns;
+
+      reportTitle.textContent = data.title_ar || config.title_ar;
+      reportHead.innerHTML = "";
+      reportBody.innerHTML = "";
+
+      columns.forEach((col) => {
+        const th = document.createElement("th");
+        th.textContent = col.label_ar || col.key;
+        reportHead.appendChild(th);
+      });
+
+      const rows = data.rows || [];
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="${columns.length}" class="text-center muted">لا توجد بيانات.</td>`;
+        reportBody.appendChild(tr);
+      } else {
+        rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = columns.map((col) => {
+            const value = row[col.key];
+            if (typeof value === "number") {
+              return `<td>${formatNumber(value)}</td>`;
+            }
+            return `<td>${value ?? ""}</td>`;
+          }).join("");
+          reportBody.appendChild(tr);
+        });
+      }
+
+      const totals = data.totals || {};
+      if (Object.keys(totals).length) {
+        reportFooter.classList.remove("d-none");
+        reportFooterRow.innerHTML = columns.map((col, idx) => {
+          if (idx === 0) return `<th>الإجمالي</th>`;
+          if (col.key === "amount" && totals.amount_sum !== undefined) {
+            return `<th>${formatNumber(totals.amount_sum)}</th>`;
+          }
+          if (col.key === "amount_in" && totals.total_in !== undefined) {
+            return `<th>${formatNumber(totals.total_in)}</th>`;
+          }
+          if (col.key === "amount_out" && totals.total_out !== undefined) {
+            return `<th>${formatNumber(totals.total_out)}</th>`;
+          }
+          if (col.key === "balance" && totals.ending_balance !== undefined) {
+            return `<th>${formatNumber(totals.ending_balance)}</th>`;
+          }
+          if (col.key === "current_balance" && totals.current_balance !== undefined) {
+            return `<th>${formatNumber(totals.current_balance)}</th>`;
+          }
+          return "<th></th>";
+        }).join("");
+      } else {
+        reportFooter.classList.add("d-none");
+        reportFooterRow.innerHTML = "";
+      }
+    }
+
+    function buildPayload() {
+      return {
+        date_from: filterDateFrom.value || null,
+        date_to: filterDateTo.value || null,
+        safe_id: filterSafe.value || null,
+        doc_no: filterDocNo.value || null,
+        employee_id: filterEmployee.value || null
+      };
+    }
+
+    async function fetchReport() {
+      hideAlert();
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/treasury/reports/${state.reportKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildPayload())
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "حدث خطأ أثناء جلب التقرير.");
+        renderTable(data);
+      } catch (err) {
+        showAlert(err.message || "تعذر تحميل التقرير.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function loadLookups() {
+      const [safesRes, employeesRes] = await Promise.all([
+        fetch("/api/lookups/safes"),
+        fetch("/api/lookups/employees")
+      ]);
+
+      const safes = safesRes.ok ? await safesRes.json() : [];
+      const employees = employeesRes.ok ? await employeesRes.json() : [];
+
+      safes.forEach((safe) => {
+        const opt = document.createElement("option");
+        opt.value = safe.id;
+        opt.textContent = safe.name;
+        filterSafe.appendChild(opt);
+      });
+      employees.forEach((emp) => {
+        const opt = document.createElement("option");
+        opt.value = emp.id;
+        opt.textContent = emp.name;
+        filterEmployee.appendChild(opt);
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        state.reportKey = tab.dataset.report;
+        applyFiltersUI();
+        renderTable({ title_ar: reportConfig[state.reportKey].title_ar, columns: reportConfig[state.reportKey].columns, rows: [] });
+      });
+    });
+
+    document.getElementById("treasuryFetch").addEventListener("click", fetchReport);
+    document.getElementById("treasuryPrint").addEventListener("click", () => window.printReport ? window.printReport() : window.print());
+
+    applyFiltersUI();
+    loadLookups().catch(() => showAlert("تعذر تحميل بيانات القوائم."));
+  })();
+</script>

@@ -1,0 +1,409 @@
+<div class="purchase-reports" dir="rtl">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div>
+      <div class="h5 m-0">تقارير المشتريات</div>
+      <div class="muted">تقارير أوامر الشراء وكميات الأصناف</div>
+    </div>
+    <div class="d-flex gap-2 no-print">
+      <button id="purchasesReportsFetch" class="btn btn-primary">عرض</button>
+      <button id="purchasesReportsPrint" class="btn btn-outline-secondary">طباعة</button>
+    </div>
+  </div>
+
+  <div class="reports-bar no-print">
+    <div class="reports-scroll" id="purchasesReportsBar">
+      <button class="report-tab active" data-report="purchase-orders-list">كشف أوامر الشراء</button>
+      <button class="report-tab" data-report="incoming-items-qty">تقرير عن كميات الأصناف الواردة</button>
+      <button class="report-tab" data-report="item-purchases-volume">حجم مشتريات أصناف</button>
+    </div>
+  </div>
+
+  <div class="card p-3 mb-3 no-print" id="purchasesFiltersPanel">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-md-3 filter-block" data-filter="date">
+        <label class="form-label">من تاريخ</label>
+        <input id="filterDateFrom" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="date">
+        <label class="form-label">إلى تاريخ</label>
+        <input id="filterDateTo" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="supplier">
+        <label class="form-label">المورد</label>
+        <select id="filterSupplier" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="warehouse">
+        <label class="form-label">المخزن</label>
+        <select id="filterWarehouse" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="status">
+        <label class="form-label">حالة الأمر</label>
+        <select id="filterOrderStatus" class="form-select" data-no-search>
+          <option value="">الكل</option>
+          <option value="open">مفتوح</option>
+          <option value="converted">مغلق</option>
+          <option value="cancelled">ملغي</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="item">
+        <label class="form-label">الصنف</label>
+        <select id="filterItem" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="category">
+        <label class="form-label">الفئة</label>
+        <select id="filterCategory" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="doc">
+        <label class="form-label">رقم المستند</label>
+        <input id="filterDocNo" type="text" class="form-control" />
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="sort">
+        <label class="form-label">الترتيب</label>
+        <select id="filterSortBy" class="form-select" data-no-search>
+          <option value="date">حسب التاريخ</option>
+          <option value="doc_no">حسب المستند</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="sort">
+        <label class="form-label">اتجاه الترتيب</label>
+        <select id="filterSortDir" class="form-select" data-no-search>
+          <option value="asc">تصاعدي</option>
+          <option value="desc">تنازلي</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="pageAlert" class="alert alert-danger d-none" role="alert"></div>
+  <div id="loadingBox" class="alert alert-info d-none" role="alert">جاري تحميل التقرير...</div>
+
+  <div id="print-area" class="print-area">
+    <div class="print-header">
+      <div class="fw-semibold" data-print-title>عنوان التقرير</div>
+      <div class="small muted" data-print-date></div>
+      <div class="small muted" data-print-filters></div>
+    </div>
+    <div class="card p-3">
+      <div class="fw-semibold mb-3" id="reportTitle">كشف أوامر الشراء</div>
+      <div class="table-responsive">
+        <table class="table table-bordered mb-0">
+          <thead class="table-light">
+            <tr id="reportHead">
+              <th>العمود</th>
+            </tr>
+          </thead>
+          <tbody id="reportBody">
+            <tr>
+              <td class="text-center muted">اضغط عرض لإظهار البيانات.</td>
+            </tr>
+          </tbody>
+          <tfoot id="reportFooter" class="d-none">
+            <tr class="table-light" id="reportFooterRow"></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .reports-bar {
+    background: #f3f5f9;
+    border-radius: 12px;
+    padding: 8px;
+    overflow: hidden;
+  }
+  .reports-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .report-tab {
+    border: 1px solid #d0d7de;
+    background: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .report-tab.active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+  }
+  .filter-block { display: none; }
+  .filter-block.active { display: block; }
+
+  @media print {
+    body { background: #fff !important; }
+    .no-print { display: none !important; }
+    #print-area { display: block !important; }
+    #print-area * { direction: rtl; text-align: right; }
+  }
+</style>
+
+<script>
+  (function () {
+    const reportConfig = {
+      "purchase-orders-list": {
+        title_ar: "كشف أوامر الشراء",
+        filters: ["date", "supplier", "status", "warehouse", "doc", "sort"],
+        columns: [
+          { key: "po_no", label_ar: "رقم الأمر" },
+          { key: "po_date", label_ar: "التاريخ" },
+          { key: "supplier_name", label_ar: "المورد" },
+          { key: "warehouse_name", label_ar: "المخزن" },
+          { key: "status", label_ar: "الحالة" },
+          { key: "total_amount", label_ar: "الإجمالي" },
+          { key: "notes", label_ar: "ملاحظات" }
+        ],
+        totals: ["total_sum", "orders_count"]
+      },
+      "incoming-items-qty": {
+        title_ar: "تقرير عن كميات الأصناف الواردة",
+        filters: ["date", "supplier", "item", "warehouse", "doc", "sort"],
+        columns: [
+          { key: "doc_no", label_ar: "المستند" },
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "supplier_name", label_ar: "المورد" },
+          { key: "warehouse_name", label_ar: "المخزن" },
+          { key: "item_code", label_ar: "كود الصنف" },
+          { key: "item_name", label_ar: "اسم الصنف" },
+          { key: "qty_in", label_ar: "الكمية الواردة" },
+          { key: "unit_cost", label_ar: "تكلفة الوحدة" },
+          { key: "total_cost", label_ar: "إجمالي التكلفة" }
+        ],
+        totals: ["qty_sum", "total_cost_sum", "docs_count"]
+      },
+      "item-purchases-volume": {
+        title_ar: "حجم مشتريات أصناف",
+        filters: ["date", "supplier", "category", "warehouse", "sort"],
+        columns: [
+          { key: "item_code", label_ar: "كود الصنف" },
+          { key: "item_name", label_ar: "اسم الصنف" },
+          { key: "qty_purchased", label_ar: "الكمية" },
+          { key: "avg_unit_cost", label_ar: "متوسط التكلفة" },
+          { key: "total_cost", label_ar: "إجمالي التكلفة" },
+          { key: "last_purchase_date", label_ar: "آخر شراء" }
+        ],
+        totals: ["qty_sum", "total_cost_sum", "items_count"]
+      }
+    };
+
+    const state = { reportKey: "purchase-orders-list" };
+    const tabs = document.querySelectorAll(".report-tab");
+    const reportTitle = document.getElementById("reportTitle");
+    const reportHead = document.getElementById("reportHead");
+    const reportBody = document.getElementById("reportBody");
+    const reportFooter = document.getElementById("reportFooter");
+    const reportFooterRow = document.getElementById("reportFooterRow");
+    const filterBlocks = document.querySelectorAll(".filter-block");
+    const pageAlert = document.getElementById("pageAlert");
+    const loadingBox = document.getElementById("loadingBox");
+
+    const filterDateFrom = document.getElementById("filterDateFrom");
+    const filterDateTo = document.getElementById("filterDateTo");
+    const filterSupplier = document.getElementById("filterSupplier");
+    const filterWarehouse = document.getElementById("filterWarehouse");
+    const filterOrderStatus = document.getElementById("filterOrderStatus");
+    const filterItem = document.getElementById("filterItem");
+    const filterCategory = document.getElementById("filterCategory");
+    const filterDocNo = document.getElementById("filterDocNo");
+    const filterSortBy = document.getElementById("filterSortBy");
+    const filterSortDir = document.getElementById("filterSortDir");
+
+    function showAlert(message) {
+      pageAlert.textContent = message;
+      pageAlert.classList.remove("d-none");
+    }
+
+    function hideAlert() {
+      pageAlert.classList.add("d-none");
+    }
+
+    function setLoading(isLoading) {
+      loadingBox.classList.toggle("d-none", !isLoading);
+    }
+
+    function formatNumber(value) {
+      const num = Number(value || 0);
+      return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function applyFiltersUI() {
+      const config = reportConfig[state.reportKey];
+      filterBlocks.forEach((block) => {
+        const key = block.getAttribute("data-filter");
+        block.classList.toggle("active", config.filters.includes(key));
+      });
+    }
+
+    function renderTable(data) {
+      const config = reportConfig[state.reportKey];
+      const columns = data.columns && data.columns.length ? data.columns : config.columns;
+
+      reportTitle.textContent = data.title_ar || config.title_ar;
+      reportHead.innerHTML = "";
+      reportBody.innerHTML = "";
+
+      columns.forEach((col) => {
+        const th = document.createElement("th");
+        th.textContent = col.label_ar || col.key;
+        reportHead.appendChild(th);
+      });
+
+      const rows = data.rows || [];
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="${columns.length}" class="text-center muted">لا توجد بيانات.</td>`;
+        reportBody.appendChild(tr);
+      } else {
+        rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = columns.map((col) => {
+            const value = row[col.key];
+            if (typeof value === "number") {
+              return `<td>${formatNumber(value)}</td>`;
+            }
+            return `<td>${value ?? ""}</td>`;
+          }).join("");
+          reportBody.appendChild(tr);
+        });
+      }
+
+      const totals = data.totals || {};
+      if (Object.keys(totals).length) {
+        reportFooter.classList.remove("d-none");
+        reportFooterRow.innerHTML = columns.map((col, idx) => {
+          if (idx === 0) return `<th>الإجمالي</th>`;
+          if (col.key === "total_amount" && totals.total_sum !== undefined) {
+            return `<th>${formatNumber(totals.total_sum)}</th>`;
+          }
+          if (col.key === "qty_in" && totals.qty_sum !== undefined) {
+            return `<th>${formatNumber(totals.qty_sum)}</th>`;
+          }
+          if (col.key === "total_cost" && totals.total_cost_sum !== undefined) {
+            return `<th>${formatNumber(totals.total_cost_sum)}</th>`;
+          }
+          if (col.key === "qty_purchased" && totals.qty_sum !== undefined) {
+            return `<th>${formatNumber(totals.qty_sum)}</th>`;
+          }
+          if (col.key === "total_cost" && totals.total_cost_sum !== undefined) {
+            return `<th>${formatNumber(totals.total_cost_sum)}</th>`;
+          }
+          if (col.key === "supplier_name" && totals.orders_count !== undefined) {
+            return `<th>${totals.orders_count}</th>`;
+          }
+          if (col.key === "item_name" && totals.items_count !== undefined) {
+            return `<th>${totals.items_count}</th>`;
+          }
+          return "<th></th>";
+        }).join("");
+      } else {
+        reportFooter.classList.add("d-none");
+        reportFooterRow.innerHTML = "";
+      }
+    }
+
+    function buildPayload() {
+      return {
+        date_from: filterDateFrom.value || null,
+        date_to: filterDateTo.value || null,
+        supplier_id: filterSupplier.value || null,
+        warehouse_id: filterWarehouse.value || null,
+        item_id: filterItem.value || null,
+        category_id: filterCategory.value || null,
+        doc_no: filterDocNo.value || null,
+        order_status: filterOrderStatus.value || null,
+        sort_by: filterSortBy.value || "date",
+        sort_dir: filterSortDir.value || "asc"
+      };
+    }
+
+    async function fetchReport() {
+      hideAlert();
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/purchases/reports/${state.reportKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildPayload())
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "حدث خطأ أثناء جلب التقرير.");
+        renderTable(data);
+      } catch (err) {
+        showAlert(err.message || "تعذر تحميل التقرير.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function loadLookups() {
+      const [suppliersRes, itemsRes, warehousesRes, categoriesRes] = await Promise.all([
+        fetch("/api/lookups/suppliers"),
+        fetch("/api/lookups/items"),
+        fetch("/api/lookups/warehouses"),
+        fetch("/api/lookups/categories")
+      ]);
+
+      const suppliers = suppliersRes.ok ? await suppliersRes.json() : [];
+      const items = itemsRes.ok ? await itemsRes.json() : [];
+      const warehouses = warehousesRes.ok ? await warehousesRes.json() : [];
+      const categories = categoriesRes.ok ? await categoriesRes.json() : [];
+
+      suppliers.forEach((sup) => {
+        const opt = document.createElement("option");
+        opt.value = sup.id;
+        opt.textContent = sup.name;
+        filterSupplier.appendChild(opt);
+      });
+      items.forEach((itm) => {
+        const opt = document.createElement("option");
+        opt.value = itm.id;
+        opt.textContent = itm.name;
+        filterItem.appendChild(opt);
+      });
+      warehouses.forEach((wh) => {
+        const opt = document.createElement("option");
+        opt.value = wh.id;
+        opt.textContent = wh.name;
+        filterWarehouse.appendChild(opt);
+      });
+      categories.forEach((cat) => {
+        const opt = document.createElement("option");
+        opt.value = cat.id;
+        opt.textContent = cat.name;
+        filterCategory.appendChild(opt);
+      });
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        state.reportKey = tab.dataset.report;
+        applyFiltersUI();
+        renderTable({ title_ar: reportConfig[state.reportKey].title_ar, columns: reportConfig[state.reportKey].columns, rows: [] });
+      });
+    });
+
+    document.getElementById("purchasesReportsFetch").addEventListener("click", fetchReport);
+    document.getElementById("purchasesReportsPrint").addEventListener("click", () => window.printReport ? window.printReport() : window.print());
+
+    applyFiltersUI();
+    loadLookups().catch(() => showAlert("تعذر تحميل بيانات القوائم."));
+  })();
+</script>
+
+
+

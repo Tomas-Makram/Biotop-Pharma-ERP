@@ -1,0 +1,242 @@
+﻿<div class="row g-3">
+  <div class="col-12">
+    <div id="pageAlert" class="alert d-none"></div>
+  </div>
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h1 class="h4 m-0">أمر بيع</h1>
+        <div class="muted">تسجيل طلبات البيع</div>
+      </div>
+
+      {% if errors %}
+      <div class="alert alert-danger mt-3">
+        <ul class="mb-0">
+          {% for err in errors %}
+          <li>{{ err }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <hr class="my-4" />
+
+      <form id="salesOrderForm"
+            class="row g-3"
+            hx-post="/sales/orders"
+            hx-target="#ordersTableContainer"
+            hx-swap="innerHTML"
+            data-alert-success="تم حفظ أمر البيع"
+            data-alert-fail="فشل حفظ أمر البيع">
+
+        <div class="col-12 col-md-3">
+          <label class="form-label">التاريخ</label>
+          <input name="date" type="date" class="form-control" value="{{ today }}" />
+        </div>
+        <div class="col-12 col-md-9">
+          <label class="form-label">العميل</label>
+          <select name="location_id" class="form-select" required>
+            <option value="">اختر العميل</option>
+            {% for c in customers %}
+              <option value="{{ c.id }}">{{ c.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">ملاحظات</label>
+          <input name="notes" class="form-control" />
+        </div>
+
+        <div class="col-12">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="h6 m-0">بنود أمر البيع</h2>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addOrderRow">إضافة سطر</button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle" id="orderItemsTable">
+              <thead class="table-light">
+                <tr>
+                  <th>الصنف</th>
+                  <th style="width: 120px;">الكمية</th>
+                  <th style="width: 150px;">سعر البيع</th>
+                  <th style="width: 80px;">حذف</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ✅ زر الحفظ: Button فقط (مش submit) -->
+        <div class="col-12 d-grid">
+          <button class="btn btn-success" type="button" id="saveBtn">حفظ</button>
+        </div>
+
+        <!-- ✅ submit مخفي نستخدمه عند الضغط على حفظ فقط -->
+        <button type="submit" id="hiddenSubmitBtn" class="d-none" tabindex="-1" aria-hidden="true"></button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3 d-flex align-items-center justify-content-between">
+        <h2 class="h5 m-0">قائمة أوامر البيع</h2>
+        <div class="muted">الإجمالي: <span data-total-count>{{ orders|length }}</span></div>
+      </div>
+      <div id="ordersTableContainer">
+        {% include "sales/orders_table.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="ordersData" class="d-none" data-items='{{ items_json | e }}'></div>
+
+<script>
+  (function() {
+    const dataEl = document.getElementById('ordersData');
+    const items = JSON.parse(dataEl.dataset.items || '[]');
+
+    const form = document.getElementById('salesOrderForm');
+    const table = document.getElementById('orderItemsTable');
+    const tbody = table.querySelector('tbody');
+    const addBtn = document.getElementById('addOrderRow');
+    const saveBtn = document.getElementById('saveBtn');
+    const hiddenSubmitBtn = document.getElementById('hiddenSubmitBtn');
+
+    // ✅ قفل الحفظ: لا Request ولا Submit إلا بزر حفظ
+    let allowSave = false;
+
+    function itemOptions() {
+      return ['<option value="">اختر الصنف</option>']
+        .concat(items.map(i => `<option value="${i.id}">${i.name}</option>`))
+        .join('');
+    }
+
+    function addRow(focus = true) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <select name="item_id" class="form-select" required>
+            ${itemOptions()}
+          </select>
+        </td>
+        <td>
+          <input name="qty" class="form-control" type="number" step="0.01" min="0.01" value="1" required />
+        </td>
+        <td>
+          <input name="unit_price" class="form-control" type="number" step="0.01" min="0" value="0" required />
+        </td>
+        <td class="text-center">
+          <button type="button" class="btn btn-sm btn-danger remove-row">حذف</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      if (focus) {
+        tr.querySelector('select[name="item_id"]').focus();
+      }
+    }
+
+    // إضافة سطر
+    addBtn.addEventListener('click', () => addRow(true));
+
+    // حذف سطر
+    tbody.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove-row')) {
+        e.target.closest('tr').remove();
+        if (tbody.children.length === 0) addRow(true);
+      }
+    });
+
+    /**
+     * ✅ Enter داخل جدول البنود = إضافة سطر فقط
+     */
+    function enterAddsRow(e) {
+      if (e.key !== 'Enter') return;
+      if (!e.target.closest('#orderItemsTable')) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      allowSave = false; // تأكيد
+      addRow(true);
+      return false;
+    }
+    form.addEventListener('keydown', enterAddsRow, true);
+    form.addEventListener('keypress', enterAddsRow, true);
+
+    /**
+     * ✅ زر حفظ: يسمح بالحفظ مرة واحدة ويعمل submit يدوي
+     */
+    saveBtn.addEventListener('click', () => {
+      // التحقق من وجود بنود على الأقل
+      if (tbody.children.length === 0) {
+        showAlert('danger', 'يجب إضافة بند واحد على الأقل');
+        return;
+      }
+
+      // التحقق من اختيار عميل
+      const customerSelect = form.querySelector('select[name="location_id"]');
+      if (!customerSelect.value) {
+        showAlert('danger', 'يجب اختيار العميل');
+        customerSelect.focus();
+        return;
+      }
+
+      allowSave = true;
+
+      if (form.requestSubmit) {
+        form.requestSubmit(hiddenSubmitBtn);
+      } else {
+        hiddenSubmitBtn.click();
+      }
+    });
+
+    /**
+     * ✅ أمنع submit (حتى لو حصل) إلا لو allowSave=true
+     */
+    form.addEventListener('submit', (e) => {
+      if (!allowSave) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }
+      allowSave = false; // اقفل بعد الحفظ
+    }, true);
+
+    /**
+     * ✅ قفل HTMX request نفسه
+     */
+    document.body.addEventListener('htmx:beforeRequest', (e) => {
+      if (e.target !== form) return; // request مش بتاع الفورم ده
+      if (!allowSave) {
+        e.preventDefault(); // يمنع إرسال الطلب نهائيًا
+        return false;
+      }
+    }, true);
+
+    // دالة مساعدة لإظهار التنبيهات
+    function showAlert(type, message) {
+      const alertEl = document.getElementById('pageAlert');
+      if (alertEl) {
+        alertEl.className = `alert alert-${type}`;
+        alertEl.textContent = message;
+        alertEl.classList.remove('d-none');
+        
+        setTimeout(() => {
+          alertEl.classList.add('d-none');
+        }, 5000);
+      }
+    }
+
+    // أول تحميل
+    if (tbody.children.length === 0) {
+      addRow(false);
+    }
+  })();
+</script>

@@ -1,0 +1,60 @@
+﻿{% extends "base.html" %}
+
+{% block title %}عبوات الأصناف{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12">
+    <div id="pageAlert" class="alert d-none"></div>
+  </div>
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h1 class="h3 m-0">عبوات الأصناف</h1>
+        <div class="muted">تعريف عبوة لكل صنف</div>
+      </div>
+
+      <hr class="my-4" />
+
+      <form class="row g-3 align-items-end" hx-post="/item-units" hx-target="#tableContainer" hx-swap="innerHTML" hx-on="htmx:afterRequest: this.reset()" data-alert-success="تمت إضافة العبوة" data-alert-fail="فشل إضافة العبوة">
+        <div class="col-12 col-md-4">
+          <label class="form-label">الصنف</label>
+          <select name="item_id" class="form-select" required>
+            <option value="">اختر الصنف</option>
+            {% for i in items %}
+              <option value="{{ i.id }}">{{ i.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label">اسم العبوة</label>
+          <input name="name" class="form-control" required />
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label">معامل التحويل</label>
+          <input name="factor" class="form-control" type="number" step="0.0001" value="1" />
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label">ملاحظات</label>
+          <input name="notes" class="form-control" />
+        </div>
+        <div class="col-12 col-md-1 d-grid">
+          <button class="btn btn-success" type="submit">إضافة</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3 d-flex align-items-center justify-content-between">
+        <h2 class="h5 m-0">قائمة العبوات</h2>
+        <div class="muted">الإجمالي: <span data-total-count>{{ units|length }}</span></div>
+      </div>
+      <div id="tableContainer">
+        {% include "item_units/table.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

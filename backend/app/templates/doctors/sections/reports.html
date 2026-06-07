@@ -1,0 +1,435 @@
+<div class="doctor-reports" dir="rtl">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <div>
+      <div class="h5 m-0">تقارير عمولات الأطباء</div>
+      <div class="muted">تقارير الحركة والعمولات والمدفوعات</div>
+    </div>
+    <div class="d-flex gap-2 no-print">
+      <button id="doctorsReportsFetch" class="btn btn-primary">عرض</button>
+      <button id="doctorsReportsPrint" class="btn btn-outline-secondary">طباعة</button>
+    </div>
+  </div>
+
+  <div class="reports-bar no-print">
+    <div class="reports-scroll" id="doctorsReportsBar">
+      <button class="report-tab active" data-report="doctor-pharmacy-dispense">حركة نزول الدواء للصيدلية</button>
+      <button class="report-tab" data-report="doctor-commission-by-pharmacy">عمولة الطبيب حسب الصيدلية</button>
+      <button class="report-tab" data-report="doctor-commission-by-item">عمولة الطبيب حسب الدواء</button>
+      <button class="report-tab" data-report="doctor-statement">كشف حساب الطبيب</button>
+      <button class="report-tab" data-report="doctor-payments">مدفوعات الطبيب</button>
+    </div>
+  </div>
+
+  <div class="card p-3 mb-3 no-print" id="doctorsFiltersPanel">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-md-3 filter-block" data-filter="date">
+        <label class="form-label">من تاريخ</label>
+        <input id="filterDateFrom" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="date">
+        <label class="form-label">إلى تاريخ</label>
+        <input id="filterDateTo" type="date" class="form-control" />
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="doctor">
+        <label class="form-label">الطبيب</label>
+        <select id="filterDoctor" class="form-select" data-no-search>
+          <option value="">اختر الطبيب</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="pharmacy">
+        <label class="form-label">الصيدلية</label>
+        <select id="filterPharmacy" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="item">
+        <label class="form-label">الدواء</label>
+        <select id="filterItem" class="form-select" data-no-search>
+          <option value="">الكل</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="doc">
+        <label class="form-label">رقم المستند</label>
+        <input id="filterDocNo" type="text" class="form-control" />
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="sort">
+        <label class="form-label">الترتيب</label>
+        <select id="filterSortBy" class="form-select" data-no-search>
+          <option value="date">حسب التاريخ</option>
+          <option value="doc_no">حسب المستند</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="sort">
+        <label class="form-label">اتجاه الترتيب</label>
+        <select id="filterSortDir" class="form-select" data-no-search>
+          <option value="asc">تصاعدي</option>
+          <option value="desc">تنازلي</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="opening">
+        <label class="form-label">إظهار رصيد أول المدة</label>
+        <select id="filterIncludeOpening" class="form-select" data-no-search>
+          <option value="true">نعم</option>
+          <option value="false">لا</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-3 filter-block" data-filter="opening-date">
+        <label class="form-label">رصيد أول المدة في</label>
+        <input id="filterOpeningAsOf" type="date" class="form-control" />
+      </div>
+    </div>
+  </div>
+
+  <div id="pageAlert" class="alert alert-danger d-none" role="alert"></div>
+  <div id="loadingBox" class="alert alert-info d-none" role="alert">جاري تحميل التقرير...</div>
+
+  <div id="print-area" class="print-area">
+    <div class="print-header">
+      <div class="fw-semibold" data-print-title>عنوان التقرير</div>
+      <div class="small muted" data-print-date></div>
+      <div class="small muted" data-print-filters></div>
+    </div>
+    <div class="card p-3">
+      <div class="fw-semibold mb-3" id="reportTitle">حركة نزول الدواء للصيدلية</div>
+      <div class="table-responsive">
+        <table class="table table-bordered mb-0">
+          <thead class="table-light">
+            <tr id="reportHead">
+              <th>العمود</th>
+            </tr>
+          </thead>
+          <tbody id="reportBody">
+            <tr>
+              <td class="text-center muted">اضغط عرض لإظهار البيانات.</td>
+            </tr>
+          </tbody>
+          <tfoot id="reportFooter" class="d-none">
+            <tr class="table-light" id="reportFooterRow"></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .reports-bar {
+    background: #f3f5f9;
+    border-radius: 12px;
+    padding: 8px;
+    overflow: hidden;
+  }
+  .reports-scroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .report-tab {
+    border: 1px solid #d0d7de;
+    background: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+  .report-tab.active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+  }
+  .filter-block { display: none; }
+  .filter-block.active { display: block; }
+
+  @media print {
+    body { background: #fff !important; }
+    .no-print { display: none !important; }
+    #print-area { display: block !important; }
+    #print-area * { direction: rtl; text-align: right; }
+  }
+</style>
+
+<script>
+  (function () {
+    const reportConfig = {
+      "doctor-pharmacy-dispense": {
+        title_ar: "حركة نزول الدواء للصيدلية",
+        filters: ["date", "doctor", "pharmacy", "item", "doc", "sort"],
+        columns: [
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "pharmacy_name", label_ar: "الصيدلية" },
+          { key: "item_name", label_ar: "اسم الصنف" },
+          { key: "qty", label_ar: "الكمية" },
+          { key: "unit_price", label_ar: "السعر" },
+          { key: "line_total", label_ar: "إجمالي السطر" },
+          { key: "commission_rate", label_ar: "نسبة العمولة" },
+          { key: "commission_amount", label_ar: "العمولة" }
+        ],
+        totals: ["qty_sum", "line_total_sum", "commission_sum"]
+      },
+      "doctor-commission-by-pharmacy": {
+        title_ar: "عمولة الطبيب حسب الصيدلية",
+        filters: ["date", "doctor", "pharmacy", "sort"],
+        columns: [
+          { key: "pharmacy_name", label_ar: "الصيدلية" },
+          { key: "qty_sum", label_ar: "الكمية" },
+          { key: "sales_sum", label_ar: "إجمالي المبيعات" },
+          { key: "commission_rate_avg", label_ar: "متوسط العمولة" },
+          { key: "commission_sum", label_ar: "إجمالي العمولة" }
+        ],
+        totals: ["sales_sum", "commission_sum"]
+      },
+      "doctor-commission-by-item": {
+        title_ar: "عمولة الطبيب حسب الدواء",
+        filters: ["date", "doctor", "item", "sort"],
+        columns: [
+          { key: "item_name", label_ar: "اسم الصنف" },
+          { key: "qty_sum", label_ar: "الكمية" },
+          { key: "sales_sum", label_ar: "إجمالي المبيعات" },
+          { key: "commission_rate_avg", label_ar: "متوسط العمولة" },
+          { key: "commission_sum", label_ar: "إجمالي العمولة" }
+        ],
+        totals: ["qty_sum", "sales_sum", "commission_sum"]
+      },
+      "doctor-statement": {
+        title_ar: "كشف حساب الطبيب",
+        filters: ["date", "doctor", "pharmacy", "sort", "opening", "opening-date"],
+        columns: [
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "txn_type", label_ar: "نوع الحركة" },
+          { key: "description", label_ar: "البيان" },
+          { key: "pharmacy_name", label_ar: "الصيدلية" },
+          { key: "debit", label_ar: "مدين" },
+          { key: "credit", label_ar: "دائن" },
+          { key: "balance", label_ar: "الرصيد" }
+        ],
+        totals: ["debit_sum", "credit_sum", "ending_balance", "docs_count"]
+      },
+      "doctor-payments": {
+        title_ar: "مدفوعات الطبيب",
+        filters: ["date", "doctor", "doc", "sort"],
+        columns: [
+          { key: "doc_date", label_ar: "التاريخ" },
+          { key: "doctor_name", label_ar: "الطبيب" },
+          { key: "amount", label_ar: "المبلغ" },
+          { key: "notes", label_ar: "البيان" }
+        ],
+        totals: ["amount_sum", "docs_count"]
+      }
+    };
+
+    const state = { reportKey: "doctor-pharmacy-dispense" };
+    const tabs = document.querySelectorAll(".report-tab");
+    const reportTitle = document.getElementById("reportTitle");
+    const reportHead = document.getElementById("reportHead");
+    const reportBody = document.getElementById("reportBody");
+    const reportFooter = document.getElementById("reportFooter");
+    const reportFooterRow = document.getElementById("reportFooterRow");
+    const filterBlocks = document.querySelectorAll(".filter-block");
+    const pageAlert = document.getElementById("pageAlert");
+    const loadingBox = document.getElementById("loadingBox");
+
+    const filterDateFrom = document.getElementById("filterDateFrom");
+    const filterDateTo = document.getElementById("filterDateTo");
+    const filterDoctor = document.getElementById("filterDoctor");
+    const filterPharmacy = document.getElementById("filterPharmacy");
+    const filterItem = document.getElementById("filterItem");
+    const filterDocNo = document.getElementById("filterDocNo");
+    const filterSortBy = document.getElementById("filterSortBy");
+    const filterSortDir = document.getElementById("filterSortDir");
+    const filterIncludeOpening = document.getElementById("filterIncludeOpening");
+    const filterOpeningAsOf = document.getElementById("filterOpeningAsOf");
+
+    function showAlert(message) {
+      pageAlert.textContent = message;
+      pageAlert.classList.remove("d-none");
+    }
+
+    function hideAlert() {
+      pageAlert.classList.add("d-none");
+    }
+
+    function setLoading(isLoading) {
+      loadingBox.classList.toggle("d-none", !isLoading);
+    }
+
+    function formatNumber(value) {
+      const num = Number(value || 0);
+      return num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function applyFiltersUI() {
+      const config = reportConfig[state.reportKey];
+      filterBlocks.forEach((block) => {
+        const key = block.getAttribute("data-filter");
+        block.classList.toggle("active", config.filters.includes(key));
+      });
+    }
+
+    function renderTable(data) {
+      const config = reportConfig[state.reportKey];
+      const columns = data.columns && data.columns.length ? data.columns : config.columns;
+
+      reportTitle.textContent = data.title_ar || config.title_ar;
+      reportHead.innerHTML = "";
+      reportBody.innerHTML = "";
+
+      columns.forEach((col) => {
+        const th = document.createElement("th");
+        th.textContent = col.label_ar || col.key;
+        reportHead.appendChild(th);
+      });
+
+      const rows = data.rows || [];
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="${columns.length}" class="text-center muted">لا توجد بيانات.</td>`;
+        reportBody.appendChild(tr);
+      } else {
+        rows.forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = columns.map((col) => {
+            const value = row[col.key];
+            if (typeof value === "number") {
+              return `<td>${formatNumber(value)}</td>`;
+            }
+            return `<td>${value ?? ""}</td>`;
+          }).join("");
+          reportBody.appendChild(tr);
+        });
+      }
+
+      const totals = data.totals || {};
+      if (Object.keys(totals).length) {
+        reportFooter.classList.remove("d-none");
+        reportFooterRow.innerHTML = columns.map((col, idx) => {
+          if (idx === 0) return `<th>الإجمالي</th>`;
+          if (col.key === "qty" && totals.qty_sum !== undefined) {
+            return `<th>${formatNumber(totals.qty_sum)}</th>`;
+          }
+          if (col.key === "line_total" && totals.line_total_sum !== undefined) {
+            return `<th>${formatNumber(totals.line_total_sum)}</th>`;
+          }
+          if (col.key === "commission_amount" && totals.commission_sum !== undefined) {
+            return `<th>${formatNumber(totals.commission_sum)}</th>`;
+          }
+          if (col.key === "sales_sum" && totals.sales_sum !== undefined) {
+            return `<th>${formatNumber(totals.sales_sum)}</th>`;
+          }
+          if (col.key === "commission_sum" && totals.commission_sum !== undefined) {
+            return `<th>${formatNumber(totals.commission_sum)}</th>`;
+          }
+          if (col.key === "amount" && totals.amount_sum !== undefined) {
+            return `<th>${formatNumber(totals.amount_sum)}</th>`;
+          }
+          if (col.key === "debit" && totals.debit_sum !== undefined) {
+            return `<th>${formatNumber(totals.debit_sum)}</th>`;
+          }
+          if (col.key === "credit" && totals.credit_sum !== undefined) {
+            return `<th>${formatNumber(totals.credit_sum)}</th>`;
+          }
+          if (col.key === "balance" && totals.ending_balance !== undefined) {
+            return `<th>${formatNumber(totals.ending_balance)}</th>`;
+          }
+          if (col.key === "doc_no" && totals.docs_count !== undefined) {
+            return `<th>${totals.docs_count}</th>`;
+          }
+          return "<th></th>";
+        }).join("");
+      } else {
+        reportFooter.classList.add("d-none");
+        reportFooterRow.innerHTML = "";
+      }
+    }
+
+    function buildPayload() {
+      return {
+        date_from: filterDateFrom.value || null,
+        date_to: filterDateTo.value || null,
+        doctor_id: filterDoctor.value || null,
+        pharmacy_id: filterPharmacy.value || null,
+        item_id: filterItem.value || null,
+        doc_no: filterDocNo.value || null,
+        sort_by: filterSortBy.value || "date",
+        sort_dir: filterSortDir.value || "asc",
+        include_opening_balance: filterIncludeOpening.value !== "false",
+        opening_balance_as_of: filterOpeningAsOf.value || null
+      };
+    }
+
+    async function fetchReport() {
+      hideAlert();
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/doctors/reports/${state.reportKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildPayload())
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "حدث خطأ أثناء جلب التقرير.");
+        renderTable(data);
+      } catch (err) {
+        showAlert(err.message || "تعذر تحميل التقرير.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function loadLookups() {
+      const [doctorsRes, pharmaciesRes, itemsRes, periodRes] = await Promise.all([
+        fetch("/api/lookups/doctors"),
+        fetch("/api/lookups/pharmacies"),
+        fetch("/api/lookups/items"),
+        fetch("/api/lookups/system-period")
+      ]);
+
+      const doctors = doctorsRes.ok ? await doctorsRes.json() : [];
+      const pharmacies = pharmaciesRes.ok ? await pharmaciesRes.json() : [];
+      const items = itemsRes.ok ? await itemsRes.json() : [];
+      const period = periodRes.ok ? await periodRes.json() : null;
+
+      doctors.forEach((doc) => {
+        const opt = document.createElement("option");
+        opt.value = doc.id;
+        opt.textContent = doc.name;
+        filterDoctor.appendChild(opt);
+      });
+      pharmacies.forEach((ph) => {
+        const opt = document.createElement("option");
+        opt.value = ph.id;
+        opt.textContent = ph.name;
+        filterPharmacy.appendChild(opt);
+      });
+      items.forEach((itm) => {
+        const opt = document.createElement("option");
+        opt.value = itm.id;
+        opt.textContent = itm.name;
+        filterItem.appendChild(opt);
+      });
+
+      if (period) {
+        if (!filterDateFrom.value) filterDateFrom.value = period.start_date || "";
+        if (!filterDateTo.value) filterDateTo.value = period.end_date || "";
+        if (!filterOpeningAsOf.value) filterOpeningAsOf.value = period.start_date || "";
+      }
+    }
+
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        state.reportKey = tab.dataset.report;
+        applyFiltersUI();
+        renderTable({ title_ar: reportConfig[state.reportKey].title_ar, columns: reportConfig[state.reportKey].columns, rows: [] });
+      });
+    });
+
+    document.getElementById("doctorsReportsFetch").addEventListener("click", fetchReport);
+    document.getElementById("doctorsReportsPrint").addEventListener("click", () => window.printReport ? window.printReport() : window.print());
+
+    applyFiltersUI();
+    loadLookups().catch(() => showAlert("تعذر تحميل بيانات القوائم."));
+  })();
+</script>
+

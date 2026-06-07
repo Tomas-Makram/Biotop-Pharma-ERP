@@ -1,0 +1,47 @@
+﻿<div id="purchase-orders-table" data-total="{{ orders|length }}">
+  {% if orders|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد طلبات شراء بعد.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>التاريخ</th>
+            <th>المورد</th>
+            <th>المخزن</th>
+            <th>الإجمالي</th>
+            <th>الحالة</th>
+            <th style="width: 220px;" class="text-end">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+          <tr>
+            <td>{{ o.id }}</td>
+            <td>{{ o.date.strftime('%Y-%m-%d') if o.date else '-' }}</td>
+            <td>{{ o.supplier.name if o.supplier else '-' }}</td>
+            <td>{{ o.location.name if o.location else '-' }}</td>
+            <td>{{ '%.2f'|format(o.total or 0) }}</td>
+            <td>{{ 'محول' if o.status == 'converted' else 'جديد' }}</td>
+            <td class="text-end">
+              {% if o.status != 'converted' %}
+                <form class="d-inline-flex align-items-end gap-2" hx-post="/purchases/orders/{{ o.id }}/convert" hx-target="#purchasesSection" hx-swap="innerHTML" hx-confirm="هل تريد تحويل طلب الشراء إلى فاتورة؟" data-alert-success="تم تحويل طلب الشراء" data-alert-fail="فشل تحويل طلب الشراء">
+                  <div>
+                    <label class="form-label mb-1">مصاريف الشحن</label>
+                    <input name="shipping_cost" type="number" step="0.01" class="form-control form-control-sm" style="width: 120px;" value="0" />
+                  </div>
+                  <button class="btn btn-sm btn-outline-primary" type="submit">تحويل لفاتورة</button>
+                </form>
+              {% endif %}
+              <button class="btn btn-sm btn-danger" hx-delete="/purchases/orders/{{ o.id }}" hx-target="#purchaseOrdersTableContainer" hx-confirm="هل أنت متأكد من الحذف؟" data-alert-success="تم حذف الطلب" data-alert-fail="فشل حذف الطلب">حذف</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+{% block title %}إعدادات الحساب{% endblock %}
+
+{% block content %}
+<style>
+  .page-wrap{ max-width: 1200px; margin: 0 auto; }
+  .soft-card { border-radius: 18px; border: 1px solid rgba(0,0,0,.08); }
+  .soft-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .muted { color: rgba(33,37,41,.65); }
+  .btn-rounded { border-radius: 12px; }
+  .kpi { border-radius: 16px; border: 1px solid rgba(0,0,0,.08); background: rgba(0,0,0,.02); padding: 12px; }
+  .chip { border-radius: 999px; padding: .35rem .6rem; font-size: .8rem; border: 1px solid rgba(0,0,0,.08); background: rgba(0,0,0,.03); display:inline-flex; align-items:center; gap:6px; }
+  .chip-admin { background: rgba(33,37,41,.08); border-color: rgba(33,37,41,.15); }
+  .chip-perm { background: rgba(13,110,253,.08); border-color: rgba(13,110,253,.18); color: #0d6efd; }
+  .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+  details > summary { list-style:none; cursor:pointer; user-select:none; }
+  details > summary::-webkit-details-marker{ display:none; }
+  .summary-btn{
+    border-radius: 12px;
+    padding: .35rem .6rem;
+    border: 1px solid rgba(0,0,0,.12);
+    background: rgba(0,0,0,.02);
+    font-size: .85rem;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  .summary-btn:hover{ background: rgba(0,0,0,.04); }
+
+  .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; }
+  .toolbar-left{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+  .search-input{ border-radius:12px; min-width: 240px; }
+  .filter-input{ border-radius:12px; min-width: 160px; }
+
+  .user-card{
+    border: 1px solid rgba(0,0,0,.08);
+    border-radius: 16px;
+    padding: 12px 14px;
+    background: #fff;
+  }
+  .user-top{
+    display:flex; flex-wrap:wrap; gap:10px;
+    align-items:center; justify-content:space-between;
+  }
+  .user-meta{
+    display:flex; flex-wrap:wrap; gap:10px;
+    align-items:center;
+  }
+  .perm-wrap{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .perm-chip{
+    border-radius: 999px;
+    padding: .25rem .55rem;
+    font-size: .75rem;
+    border: 1px solid rgba(13,110,253,.22);
+    background: rgba(13,110,253,.08);
+    color: #0d6efd;
+  }
+  .perm-chip-star{
+    border-color: rgba(25,135,84,.25);
+    background: rgba(25,135,84,.10);
+    color: #198754;
+  }
+</style>
+
+<div class="page-wrap">
+  <div class="row g-3">
+
+    <!-- ✅ My Account -->
+    <div class="col-12 col-lg-5">
+      <div class="card soft-card shadow-sm p-4">
+        <div class="soft-header mb-2">
+          <div>
+            <h1 class="h5 mb-1">إعدادات الحساب</h1>
+            <div class="small muted">عدّل بياناتك أو غيّر كلمة المرور.</div>
+          </div>
+          <div class="text-end">
+            {% if user.is_admin %}
+              <span class="chip chip-admin">Admin</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if request.query_params.get('ok') %}
+          <div class="alert alert-success py-2 mb-3">تم الحفظ بنجاح ✅</div>
+        {% endif %}
+        {% if request.query_params.get('err') == 'wrong_password' %}
+          <div class="alert alert-danger py-2 mb-3">كلمة المرور الحالية غير صحيحة</div>
+        {% elif request.query_params.get('err') == 'password_mismatch' %}
+          <div class="alert alert-danger py-2 mb-3">تأكيد كلمة المرور غير مطابق</div>
+        {% endif %}
+
+        <form method="post" action="/account/settings" class="row g-3">
+          <div class="col-12">
+            <label class="form-label">اسم المستخدم</label>
+            <input class="form-control" value="{{ me.username }}" disabled />
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">الاسم</label>
+            <input name="full_name" class="form-control" value="{{ me.full_name }}" placeholder="اكتب الاسم بالكامل" />
+          </div>
+
+          <div class="col-12">
+            <details>
+              <summary class="summary-btn">🔒 تغيير كلمة المرور (اختياري)</summary>
+              <div class="kpi mt-2">
+                <div class="row g-2">
+                  <div class="col-12">
+                    <label class="form-label">كلمة المرور الحالية</label>
+                    <input type="password" name="current_password" class="form-control" autocomplete="current-password" />
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label">كلمة المرور الجديدة</label>
+                    <input type="password" name="new_password" class="form-control" autocomplete="new-password" />
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <label class="form-label">تأكيد كلمة المرور</label>
+                    <input type="password" name="confirm_password" class="form-control" autocomplete="new-password" />
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div class="col-12 d-grid">
+            <button class="btn btn-success btn-rounded">حفظ</button>
+          </div>
+        </form>
+
+        <hr class="my-3">
+
+        <div class="small muted mb-2">صلاحياتك:</div>
+        <div class="d-flex flex-wrap gap-2">
+          {% if user.is_admin %}
+            <span class="chip chip-admin">Admin</span>
+          {% endif %}
+          {% for p in user.permissions %}
+            {% if p == "*" %}
+              <span class="chip chip-perm">* (All)</span>
+            {% else %}
+              <span class="chip chip-perm">{{ p }}</span>
+            {% endif %}
+          {% else %}
+            <span class="chip">—</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Admin Users Management -->
+    {% if can_manage_users %}
+    <div class="col-12 col-lg-7">
+      <div class="card soft-card shadow-sm p-4">
+        <div class="soft-header mb-3">
+          <div>
+            <h2 class="h5 mb-1">إدارة المستخدمين</h2>
+            <div class="small muted">إضافة/تعديل المستخدمين وتحديد الصلاحيات.</div>
+          </div>
+          <div class="kpi text-center" style="min-width:140px;">
+            <div class="fw-semibold" id="usersCount">{{ users|length }}</div>
+            <div class="small muted">عدد الحسابات</div>
+          </div>
+        </div>
+
+        <!-- Create user -->
+        <details class="mb-3">
+          <summary class="summary-btn">➕ إضافة مستخدم جديد</summary>
+          <div class="kpi mt-2">
+            <form method="post" action="/admin/users/create" class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label">Username</label>
+                <input name="username" class="form-control" required placeholder="مثال: ahmed" />
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label">الاسم</label>
+                <input name="full_name" class="form-control" placeholder="الاسم بالكامل" />
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label">Password</label>
+                <input name="password" type="password" class="form-control" required />
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label">نوع الحساب</label>
+                <div class="form-check mt-2">
+                  <input class="form-check-input" type="checkbox" value="1" id="is_admin" name="is_admin">
+                  <label class="form-check-label" for="is_admin">Admin</label>
+                </div>
+                <div class="small muted mt-1">Admin يقدر يدير المستخدمين.</div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Permissions</label>
+                <input name="permissions" class="form-control"
+                       placeholder="items.read,items.write,users.manage" />
+                <div class="form-text">اكتبها مفصولة بـ <code>,</code> أو استخدم <code>*</code> لكل الصلاحيات</div>
+              </div>
+
+              <div class="col-12 d-grid">
+                <button class="btn btn-primary btn-rounded">إضافة</button>
+              </div>
+            </form>
+          </div>
+        </details>
+
+        <!-- Filters -->
+        <div class="toolbar mb-3">
+          <div class="toolbar-left">
+            <input id="usersSearch" class="form-control search-input" placeholder="بحث بالاسم/username/الصلاحيات..." />
+            <select id="filterAdmin" class="form-select filter-input">
+              <option value="">Admin: الكل</option>
+              <option value="admin">Admin فقط</option>
+              <option value="nonadmin">Non-Admin</option>
+            </select>
+            <select id="filterActive" class="form-select filter-input">
+              <option value="">Active: الكل</option>
+              <option value="active">Active فقط</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div class="small muted">نصيحة: Permission مثل <code>reps.manage</code> لتفعيل صفحة الموظفين.</div>
+        </div>
+
+        <!-- Users list -->
+        <div id="usersList" class="d-grid gap-2">
+          {% for u in users %}
+          <div class="user-card"
+               data-admin="{{ 1 if u.is_admin else 0 }}"
+               data-active="{{ 1 if u.is_active else 0 }}"
+               data-search="{{ (u.username ~ ' ' ~ (u.full_name or '') ~ ' ' ~ (u.permissions or ''))|lower }}">
+            <div class="user-top">
+              <div class="user-meta">
+                <div class="fw-semibold">#{{ u.id }}</div>
+                <div class="mono">{{ u.username }}</div>
+                {% if u.full_name %}<div class="text-muted">{{ u.full_name }}</div>{% endif %}
+              </div>
+
+              <div class="d-flex flex-wrap gap-2">
+                {% if u.is_admin %}
+                  <span class="chip chip-admin">Admin</span>
+                {% else %}
+                  <span class="chip">User</span>
+                {% endif %}
+
+                {% if u.is_active %}
+                  <span class="chip chip-all">Active</span>
+                {% else %}
+                  <span class="chip">Inactive</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- ✅ Permissions chips (داخل الفور لوب فقط) -->
+            <div class="perm-wrap">
+              {% if u.permissions_list and u.permissions_list|length > 0 %}
+                {% for p in u.permissions_list %}
+                  {% if p == "*" %}
+                    <span class="perm-chip perm-chip-star">* (All)</span>
+                  {% else %}
+                    <span class="perm-chip">{{ p }}</span>
+                  {% endif %}
+                {% endfor %}
+              {% else %}
+                <span class="perm-chip">—</span>
+              {% endif %}
+            </div>
+
+            <div class="mt-2">
+              <!-- Update -->
+              <form method="post" action="/admin/users/{{ u.id }}/update" class="row g-2 align-items-end">
+                <div class="col-12 col-md-4">
+                  <label class="form-label small muted">الاسم</label>
+                  <input name="full_name" class="form-control form-control-sm" value="{{ u.full_name }}" />
+                </div>
+
+                <div class="col-6 col-md-2">
+                  <label class="form-label small muted">Admin</label>
+                  <select name="is_admin" class="form-select form-select-sm">
+                    <option value="0" {% if not u.is_admin %}selected{% endif %}>No</option>
+                    <option value="1" {% if u.is_admin %}selected{% endif %}>Yes</option>
+                  </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                  <label class="form-label small muted">Active</label>
+                  <select name="is_active" class="form-select form-select-sm">
+                    <option value="1" {% if u.is_active %}selected{% endif %}>Yes</option>
+                    <option value="0" {% if not u.is_active %}selected{% endif %}>No</option>
+                  </select>
+                </div>
+
+                <div class="col-12 col-md-3">
+                  <label class="form-label small muted">Permissions</label>
+                  <input name="permissions" class="form-control form-control-sm"
+                         value="{{ (u.permissions or '[]')|replace('[','')|replace(']','')|replace('\"','') }}"
+                         placeholder="items.read,users.manage" />
+                </div>
+
+                <div class="col-12 col-md-1 d-grid">
+                  <button class="btn btn-sm btn-outline-primary btn-rounded">حفظ</button>
+                </div>
+              </form>
+
+              <!-- Reset password -->
+              <details class="mt-2">
+                <summary class="summary-btn">🔁 Reset Password</summary>
+                <div class="kpi mt-2">
+                  <form method="post" action="/admin/users/{{ u.id }}/password" class="d-flex gap-2">
+                    <input name="new_password" type="password" class="form-control form-control-sm" placeholder="New password" required />
+                    <button class="btn btn-sm btn-danger btn-rounded">تحديث</button>
+                  </form>
+                </div>
+              </details>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+  (function () {
+    const search = document.getElementById("usersSearch");
+    const fAdmin = document.getElementById("filterAdmin");
+    const fActive = document.getElementById("filterActive");
+    const list = document.getElementById("usersList");
+    const countEl = document.getElementById("usersCount");
+    if (!list) return;
+
+    const cards = Array.from(list.querySelectorAll(".user-card"));
+
+    function apply(){
+      const q = (search?.value || "").toLowerCase().trim();
+      const admin = fAdmin?.value || "";
+      const active = fActive?.value || "";
+
+      let shown = 0;
+      cards.forEach(c => {
+        const text = (c.getAttribute("data-search") || "");
+        const isAdmin = c.getAttribute("data-admin") === "1";
+        const isActive = c.getAttribute("data-active") === "1";
+
+        let ok = true;
+        if (q && !text.includes(q)) ok = false;
+
+        if (admin === "admin" && !isAdmin) ok = false;
+        if (admin === "nonadmin" && isAdmin) ok = false;
+
+        if (active === "active" && !isActive) ok = false;
+        if (active === "inactive" && isActive) ok = false;
+
+        c.style.display = ok ? "" : "none";
+        if (ok) shown += 1;
+      });
+
+      if (countEl) countEl.textContent = String(shown);
+    }
+
+    [search, fAdmin, fActive].forEach(el => {
+      if (!el) return;
+      el.addEventListener("input", apply);
+      el.addEventListener("change", apply);
+    });
+
+    apply();
+  })();
+</script>
+{% endblock %}

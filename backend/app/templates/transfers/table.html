@@ -1,0 +1,39 @@
+﻿<div id="transfers-table" data-total="{{ transfers|length }}">
+  {% if transfers|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد تحويلات حتى الآن.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>التاريخ</th>
+            <th>من</th>
+            <th>إلى</th>
+            <th>الإجمالي</th>
+            <th style="width: 180px;" class="text-end">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in transfers %}
+          <tr>
+            <td>{{ t.id }}</td>
+            <td>{{ t.date.strftime('%Y-%m-%d') if t.date else '-' }}</td>
+            <td>{{ t.from_location.name if t.from_location else '-' }}</td>
+            <td>{{ t.to_location.name if t.to_location else '-' }}</td>
+            <td>{{ t.total or 0 }}</td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-primary" href="/transfers/{{ t.id }}" target="_blank">تفاصيل</a>
+              <button class="btn btn-sm btn-danger" hx-delete="/transfers/{{ t.id }}" hx-target="#tableContainer" hx-confirm="هل أنت متأكد من الحذف؟" data-alert-success="تم حذف التحويل" data-alert-fail="فشل حذف التحويل">
+                حذف
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

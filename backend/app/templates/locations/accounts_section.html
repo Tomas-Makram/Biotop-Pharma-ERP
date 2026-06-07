@@ -1,0 +1,40 @@
+﻿<div class="card p-4 mb-3">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <h2 class="h5 m-0">حسابات الجهات</h2>
+    <div class="muted">عرض حركات الحساب</div>
+  </div>
+
+  <hr class="my-3" />
+
+  <form class="row g-3 align-items-end" hx-get="/locations/accounts/table" hx-target="#accountsTableContainer" hx-swap="innerHTML">
+    <div class="col-12 col-md-4">
+      <label class="form-label">الجهة</label>
+      <select name="location_id" class="form-select" required>
+        <option value="">اختر الجهة</option>
+        {% for loc in locations %}
+          <option value="{{ loc.id }}">{{ loc.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">من تاريخ</label>
+      <input name="start_date" type="date" class="form-control" />
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">إلى تاريخ</label>
+      <input name="end_date" type="date" class="form-control" />
+    </div>
+    <div class="col-12 col-md-2 d-grid">
+      <button class="btn btn-primary">عرض</button>
+    </div>
+  </form>
+</div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="p-3">
+    <h2 class="h5 m-0">حركات الحساب</h2>
+  </div>
+  <div id="accountsTableContainer">
+    {% include "locations/accounts_table.html" %}
+  </div>
+</div>

@@ -1,0 +1,65 @@
+﻿<div id="item-units-table" data-total="{{ units|length }}">
+  {% if units|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد بيانات حتى الآن.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>الصنف</th>
+            <th>العبوة</th>
+            <th>المعامل</th>
+            <th>ملاحظات</th>
+            <th style="width: 200px;" class="text-end">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in units %}
+          <tr>
+            <td>{{ u.id }}</td>
+            <td>{{ u.item.name if u.item else '-' }}</td>
+            <td>{{ u.name }}</td>
+            <td>{{ u.factor }}</td>
+            <td>{{ u.notes or '-' }}</td>
+            <td class="text-end">
+              <details class="d-inline-block ms-2">
+                <summary class="btn btn-sm btn-outline-secondary">تعديل</summary>
+                <form class="mt-2" hx-post="/item-units/{{ u.id }}/update" hx-target="#tableContainer" hx-swap="innerHTML" data-alert-success="تم تعديل العبوة" data-alert-fail="فشل تعديل العبوة">
+                  <div class="mb-2">
+                    <label class="form-label">الصنف</label>
+                    <select name="item_id" class="form-select" required>
+                      <option value="">اختر الصنف</option>
+                      {% for i in items %}
+                        <option value="{{ i.id }}" {% if u.item_id == i.id %}selected{% endif %}>{{ i.name }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">اسم العبوة</label>
+                    <input name="name" class="form-control" value="{{ u.name }}" required />
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">معامل التحويل</label>
+                    <input name="factor" class="form-control" type="number" step="0.0001" value="{{ u.factor }}" />
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">ملاحظات</label>
+                    <input name="notes" class="form-control" value="{{ u.notes or '' }}" />
+                  </div>
+                  <button class="btn btn-sm btn-success">حفظ</button>
+                </form>
+              </details>
+              <button class="btn btn-danger btn-sm" hx-delete="/item-units/{{ u.id }}" hx-target="#tableContainer" hx-confirm="هل أنت متأكد من الحذف؟" data-alert-success="تم حذف العبوة" data-alert-fail="فشل حذف العبوة">
+                حذف
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

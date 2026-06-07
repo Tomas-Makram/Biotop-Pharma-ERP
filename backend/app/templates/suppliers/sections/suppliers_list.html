@@ -1,0 +1,91 @@
+﻿<div class="row g-3">
+  <div class="col-12">
+    <div id="pageAlert" class="alert d-none"></div>
+  </div>
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h1 class="h4 m-0">شركات التوريد</h1>
+        <div class="muted">بيانات الموردين</div>
+      </div>
+
+      <hr class="my-4" />
+
+      <form class="row g-3" hx-post="/suppliers" hx-target="#tableContainer" hx-swap="innerHTML" hx-on="htmx:afterRequest: this.reset()" data-alert-success="تمت إضافة المورد" data-alert-fail="فشل إضافة المورد">
+        <div class="col-12 col-md-5">
+          <label class="form-label">اسم الشركة</label>
+          <input name="name" class="form-control" required />
+        </div>
+        <div class="col-12 col-md-5">
+          <label class="form-label">اسم المسؤول</label>
+          <input name="contact_name" class="form-control" />
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label">رقم هاتف المسؤول</label>
+          <input name="contact_phone" class="form-control" />
+        </div>
+        <div class="col-12 col-md-8">
+          <label class="form-label">العنوان</label>
+          <input name="address" class="form-control" />
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label">المحافظة</label>
+          <input name="governorate" class="form-control" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">المدينة</label>
+          <input name="city" class="form-control" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">المنطقة</label>
+          <input name="region" class="form-control" />
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label">هاتف 1</label>
+          <input name="phone" class="form-control" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">هاتف 2</label>
+          <input name="phone2" class="form-control" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">فاكس</label>
+          <input name="fax" class="form-control" />
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="form-label">البريد الإلكتروني</label>
+          <input name="email" type="email" class="form-control" />
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label">عنوان الويب URL</label>
+          <input name="website" class="form-control" />
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">ملاحظات</label>
+          <input name="notes" class="form-control" />
+        </div>
+
+        <div class="col-12 d-grid">
+          <button class="btn btn-success" type="submit">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3 d-flex align-items-center justify-content-between">
+        <h2 class="h5 m-0">قائمة الموردين</h2>
+        <div class="muted">الإجمالي: <span data-total-count>{{ suppliers|length }}</span></div>
+      </div>
+      <div id="tableContainer">
+        {% include "suppliers/table.html" %}
+      </div>
+    </div>
+  </div>
+</div>

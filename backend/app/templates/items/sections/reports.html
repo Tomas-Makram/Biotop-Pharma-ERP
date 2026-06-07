@@ -1,0 +1,24 @@
+<div class="row g-3">
+  <div class="col-12 report-only">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h2 class="h4 m-0">تقارير الأصناف</h2>
+        <div class="muted">تقارير مرتبطة بالأصناف والمخازن</div>
+      </div>
+
+      <hr class="my-4" />
+
+      <div class="d-flex flex-wrap gap-2">
+        <button class="btn btn-outline-primary" hx-get="/items/report/items-list" hx-target="#itemsReportsContainer" hx-swap="innerHTML">تقرير قائمة الأصناف</button>
+        <button class="btn btn-outline-primary" hx-get="/items/report/stock-balances" hx-target="#itemsReportsContainer" hx-swap="innerHTML">تقرير أرصدة المخازن</button>
+        <button class="btn btn-outline-primary" hx-get="/items/report/movement" hx-target="#itemsReportsContainer" hx-swap="innerHTML">تقرير حركة الأصناف</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div id="itemsReportsContainer">
+      {% include "items/reports/items_list.html" %}
+    </div>
+  </div>
+</div>

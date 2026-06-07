@@ -1,0 +1,39 @@
+﻿<div id="orders-table" data-total="{{ orders|length }}">
+  {% if orders|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد أوامر بيع مسجلة.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">رقم</th>
+            <th>التاريخ</th>
+            <th>العميل</th>
+            <th>الإجمالي</th>
+            <th>الحالة</th>
+            <th style="width: 120px;" class="text-end">إجراء</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for o in orders %}
+          <tr>
+            <td>{{ o.id }}</td>
+            <td>{{ o.date.strftime('%Y-%m-%d') if o.date else '-' }}</td>
+            <td>{{ o.location.name if o.location else '-' }}</td>
+            <td>{{ '%.2f'|format(o.total or 0) }}</td>
+            <td>{{ 'محول' if o.status == 'converted' else 'مفتوح' }}</td>
+            <td class="text-end">
+              {% if o.status != 'converted' %}
+                <button class="btn btn-sm btn-outline-primary" hx-post="/sales/orders/{{ o.id }}/convert" hx-target="#salesSection" hx-swap="innerHTML" data-alert-success="تم تحويل أمر البيع إلى فاتورة" data-alert-fail="فشل تحويل أمر البيع">تحويل لفاتورة</button>
+              {% endif %}
+              <button class="btn btn-sm btn-danger" hx-delete="/sales/orders/{{ o.id }}" hx-target="#ordersTableContainer" hx-confirm="هل أنت متأكد من الحذف؟" data-alert-success="تم حذف أمر البيع" data-alert-fail="فشل حذف أمر البيع">حذف</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

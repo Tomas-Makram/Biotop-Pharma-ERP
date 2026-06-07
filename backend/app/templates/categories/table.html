@@ -1,0 +1,48 @@
+﻿<div id="categories-table" data-total="{{ categories|length }}">
+  {% if categories|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد بيانات حتى الآن.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>اسم الفئة</th>
+            <th>ملاحظات</th>
+            <th style="width: 180px;" class="text-end">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in categories %}
+          <tr>
+            <td>{{ cat.id }}</td>
+            <td>{{ cat.name }}</td>
+            <td>{{ cat.notes or '-' }}</td>
+            <td class="text-end">
+              <details class="d-inline-block ms-2">
+                <summary class="btn btn-sm btn-outline-secondary">تعديل</summary>
+                <form class="mt-2" hx-post="/categories/{{ cat.id }}/update" hx-target="#tableContainer" hx-swap="innerHTML" data-alert-success="تم تعديل الفئة" data-alert-fail="فشل تعديل الفئة">
+                  <div class="mb-2">
+                    <label class="form-label">اسم الفئة</label>
+                    <input name="name" class="form-control" value="{{ cat.name }}" required />
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">ملاحظات</label>
+                    <input name="notes" class="form-control" value="{{ cat.notes or '' }}" />
+                  </div>
+                  <button class="btn btn-sm btn-success">حفظ</button>
+                </form>
+              </details>
+              <button class="btn btn-danger btn-sm" hx-delete="/categories/{{ cat.id }}" hx-target="#tableContainer" hx-confirm="هل أنت متأكد من الحذف؟" data-alert-success="تم حذف الفئة" data-alert-fail="فشل حذف الفئة">
+                حذف
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

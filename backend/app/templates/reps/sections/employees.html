@@ -1,0 +1,112 @@
+﻿<div class="row g-3">
+  <div class="col-12">
+    <div id="pageAlert" class="alert d-none"></div>
+  </div>
+  <div class="col-12">
+    <div class="card p-4">
+      <form class="row g-4" hx-post="/reps" hx-target="#tableContainer" hx-swap="innerHTML" hx-on="htmx:afterRequest: this.reset()" data-alert-success="تم إضافة الموظف" data-alert-fail="تعذر إضافة الموظف">
+        <div class="col-12">
+          <h2 class="h6 mb-0">بيانات أساسية</h2>
+        </div>
+        <div class="col-12 col-md-8">
+          <label class="form-label">اسم الموظف</label>
+          <input name="name" class="form-control" required />
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label">المحمول</label>
+          <input name="mobile" class="form-control" />
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label">هاتف المنزل</label>
+          <input name="home_phone" class="form-control" />
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label">الوظيفة</label>
+          <input name="job_title" class="form-control" />
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label">هاتف العمل</label>
+          <input name="phone" class="form-control" />
+        </div>
+
+        <div class="col-12">
+          <hr class="my-1" />
+        </div>
+
+        <div class="col-12">
+          <h2 class="h6 mb-0">بيانات المرتب</h2>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">تاريخ التعيين</label>
+          <input name="hire_date" type="date" class="form-control" value="{{ today }}" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">المرتب الأساسي</label>
+          <input name="base_salary" type="number" step="0.01" class="form-control" />
+        </div>
+
+        <div class="col-12">
+          <details class="border rounded-3 p-3 bg-light">
+            <summary class="fw-semibold">بيانات إضافية</summary>
+            <div class="row g-3 mt-1">
+              <div class="col-12 col-md-4">
+                <label class="form-label">رقم البطاقة</label>
+                <input name="national_id" class="form-control" />
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">تاريخ الميلاد</label>
+                <input name="birth_date" type="date" class="form-control" />
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">النوع</label>
+                <select name="gender" class="form-select">
+                  <option value="">اختر</option>
+                  <option value="ذكر">ذكر</option>
+                  <option value="أنثى">أنثى</option>
+                </select>
+              </div>
+
+              <div class="col-12 col-md-4">
+                <label class="form-label">المحافظة</label>
+                <input name="governorate" class="form-control" />
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">المدينة</label>
+                <input name="city" class="form-control" />
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label">المنطقة</label>
+                <input name="region" class="form-control" />
+              </div>
+
+              <div class="col-12 col-md-6">
+                <label class="form-label">المدير المباشر</label>
+                <input name="supervisor" class="form-control" />
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">رقم التأمينات</label>
+                <input name="insurance_no" class="form-control" />
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="col-12 col-md-2 d-grid">
+          <button class="btn btn-success" type="submit">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3 d-flex align-items-center justify-content-between">
+        <h2 class="h5 m-0">قائمة الموظفين</h2>
+        <div class="muted">الإجمالي: <span data-total-count>{{ reps|length }}</span></div>
+      </div>
+      <div id="tableContainer">
+        {% include "reps/table.html" %}
+      </div>
+    </div>
+  </div>
+</div>

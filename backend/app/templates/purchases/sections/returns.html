@@ -1,0 +1,272 @@
+﻿<div class="row g-3">
+  <div class="col-12">
+    <div id="pageAlert" class="alert d-none"></div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h1 class="h4 m-0">مردودات مشتريات</h1>
+        <div class="muted">تسجيل مردودات المشتريات</div>
+      </div>
+
+      {% if errors %}
+      <div class="alert alert-danger mt-3">
+        <ul class="mb-0">
+          {% for err in errors %}
+          <li>{{ err }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <hr class="my-4" />
+
+      <form id="purchaseReturnForm"
+            class="row g-3"
+            hx-post="/purchases/returns/new"
+            hx-target="#purchasesSection"
+            hx-swap="innerHTML"
+            data-alert-success="تم حفظ مردود المشتريات"
+            data-alert-fail="فشل حفظ المردود">
+
+        <div class="col-12 col-md-3">
+          <label class="form-label">التاريخ</label>
+          <input name="date" type="date" class="form-control" value="{{ today }}" />
+        </div>
+
+        <div class="col-12 col-md-5">
+          <label class="form-label">المورد</label>
+          <select name="supplier_id" class="form-select" required>
+            <option value="">اختر المورد</option>
+            {% for s in suppliers %}
+              <option value="{{ s.id }}">{{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label">رقم فاتورة المورد</label>
+          <input name="invoice_no" class="form-control" />
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label">المخزن</label>
+          <select name="location_id" class="form-select" required>
+            <option value="">اختر المخزن</option>
+            {% for loc in locations %}
+              <option value="{{ loc.id }}">{{ loc.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 col-md-8">
+          <label class="form-label">سبب المرتجع</label>
+          <input name="notes" class="form-control" />
+        </div>
+
+        <div class="col-12">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="h6 m-0">بنود المرتجع</h2>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addPurchaseReturnRow">إضافة سطر</button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle" id="purchaseReturnItemsTable">
+              <thead class="table-light">
+                <tr>
+                  <th>الصنف</th>
+                  <th style="width: 130px;">رقم الباتش</th>
+                  <th style="width: 120px;">الكمية</th>
+                  <th style="width: 120px;">بونص</th>
+                  <th style="width: 120px;">ض.ق.م %</th>
+                  <th style="width: 140px;">سعر شراء</th>
+                  <th style="width: 130px;">خصم أساسي %</th>
+                  <th style="width: 130px;">خصم إضافي %</th>
+                  <th style="width: 140px;">الإجمالي</th>
+                  <th style="width: 80px;">حذف</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- زر الحفظ فقط -->
+        <div class="col-12 d-grid">
+          <button class="btn btn-success" type="button" id="saveBtn">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3 d-flex align-items-center justify-content-between">
+        <h2 class="h5 m-0">قائمة المردودات</h2>
+        <div class="muted">الإجمالي: <span data-total-count>{{ returns|length }}</span></div>
+      </div>
+      <div id="purchaseReturnsTableContainer">
+        {% include "purchases/returns_table.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="purchaseReturnsData" class="d-none" data-items='{{ items_json | e }}'></div>
+
+<script>
+  (function() {
+    const dataEl = document.getElementById('purchaseReturnsData');
+    const items = JSON.parse(dataEl.dataset.items || '[]');
+
+    const form   = document.getElementById('purchaseReturnForm');
+    const table  = document.getElementById('purchaseReturnItemsTable');
+    const tbody  = table.querySelector('tbody');
+    const addBtn = document.getElementById('addPurchaseReturnRow');
+    const saveBtn = document.getElementById('saveBtn');
+
+    // متغير للتحكم في السماح بالحفظ
+    let isSubmitting = false;
+
+    function itemOptions() {
+      return ['<option value="">اختر الصنف</option>']
+        .concat(items.map(i => `<option value="${i.id}">${i.name}</option>`))
+        .join('');
+    }
+
+    function addRow(focus = true) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <select name="item_id" class="form-select" required>
+            ${itemOptions()}
+          </select>
+        </td>
+        <td><input name="lot_code" class="form-control" /></td>
+        <td><input name="qty" class="form-control" type="number" step="0.01" min="0" value="0" /></td>
+        <td><input name="bonus_qty" class="form-control" type="number" step="0.01" min="0" value="0" /></td>
+        <td><input name="vat_pct" class="form-control" type="number" step="0.01" min="0" value="0" /></td>
+        <td><input name="purchase_price" class="form-control" type="number" step="0.01" min="0" value="0" /></td>
+        <td><input name="base_discount" class="form-control" type="number" step="0.01" min="0" value="0" /></td>
+        <td><input name="extra_discount" class="form-control" type="number" step="0.01" min="0" value="0" /></td>
+        <td><input name="line_total" class="form-control" type="number" step="0.01" min="0" value="0" readonly /></td>
+        <td class="text-center">
+          <button type="button" class="btn btn-sm btn-danger remove-row">حذف</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+
+      if (focus) {
+        tr.querySelector('select[name="item_id"]').focus();
+      }
+    }
+
+    // إضافة سطر
+    addBtn.addEventListener('click', () => addRow(true));
+
+    // حذف سطر
+    tbody.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove-row')) {
+        e.target.closest('tr').remove();
+        if (tbody.children.length === 0) addRow(true);
+      }
+    });
+
+    // منع Enter من تقديم النموذج وإضافة سطر جديد بدلاً من ذلك
+    form.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        // التحقق مما إذا كان الحدث قادم من حقل إدخال داخل الجدول
+        const isFromTableField = e.target.closest('#purchaseReturnItemsTable') && 
+                                 (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT');
+        
+        if (isFromTableField) {
+          e.preventDefault();
+          e.stopPropagation();
+          addRow(true);
+          return false;
+        }
+      }
+    }, true);
+
+    // منع أي محاولة إرسال للنموذج عبر Enter من أي مكان
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }, true);
+
+    // زر الحفظ - الطريقة الوحيدة لإرسال النموذج
+    saveBtn.addEventListener('click', function() {
+      if (isSubmitting) return; // منع النقر المتكرر
+      
+      isSubmitting = true;
+      
+      // تعطيل الزر مؤقتاً
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'جاري الحفظ...';
+      
+      // إنشاء FormData
+      const formData = new FormData(form);
+      
+      // إضافة البنود بشكل صحيح
+      const rows = tbody.querySelectorAll('tr');
+      rows.forEach((row, index) => {
+        const inputs = row.querySelectorAll('input, select');
+        inputs.forEach(input => {
+          if (input.name) {
+            formData.append(`${input.name}[${index}]`, input.value);
+          }
+        });
+      });
+      
+      // إرسال الطلب باستخدام fetch (بديل عن HTMX)
+      fetch('/purchases/returns/new', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'HX-Request': 'true'
+        }
+      })
+      .then(response => response.text())
+      .then(html => {
+        // تحديث القسم
+        document.getElementById('purchasesSection').innerHTML = html;
+        
+        // إظهار رسالة نجاح
+        showAlert('success', form.dataset.alertSuccess || 'تم الحفظ بنجاح');
+        
+        // إعادة تعيين النموذج
+        form.reset();
+        tbody.innerHTML = '';
+        addRow(false);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', form.dataset.alertFail || 'فشل الحفظ');
+      })
+      .finally(() => {
+        isSubmitting = false;
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'حفظ';
+      });
+    });
+
+    // دالة مساعدة لإظهار التنبيهات
+    function showAlert(type, message) {
+      const alertEl = document.getElementById('pageAlert');
+      if (alertEl) {
+        alertEl.className = `alert alert-${type}`;
+        alertEl.textContent = message;
+        alertEl.classList.remove('d-none');
+        
+        setTimeout(() => {
+          alertEl.classList.add('d-none');
+        }, 5000);
+      }
+    }
+
+    // أول تحميل
+    if (tbody.children.length === 0) addRow(false);
+  })();
+</script>

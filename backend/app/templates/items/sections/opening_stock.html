@@ -1,0 +1,179 @@
+﻿<div class="row g-3">
+  <div class="col-12">
+    <div id="pageAlert" class="alert d-none"></div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h2 class="h4 m-0">رصيد أول المدة</h2>
+        <div class="muted">إدخال كميات البداية لكل مخزن</div>
+      </div>
+
+      <hr class="my-4" />
+
+      <form id="openingForm"
+            class="row g-3"
+            hx-post="/opening-stock"
+            hx-target="#tableContainer"
+            hx-swap="innerHTML"
+            data-alert-success="تم تسجيل رصيد أول المدة"
+            data-alert-fail="فشل تسجيل الرصيد">
+
+        <div class="col-12 col-md-3">
+          <label class="form-label">التاريخ</label>
+          <input name="date" type="date" class="form-control" value="{{ today }}" />
+        </div>
+
+        <div class="col-12 col-md-4">
+          <label class="form-label">المخزن</label>
+          <select name="location_id" class="form-select" required>
+            <option value="">اختر المخزن</option>
+            {% for loc in locations %}
+              <option value="{{ loc.id }}">{{ loc.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="col-12 col-md-5">
+          <label class="form-label">ملاحظات</label>
+          <input name="notes" class="form-control" />
+        </div>
+
+        <div class="col-12">
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle" id="linesTable">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 260px;">الصنف</th>
+                  <th style="width: 125px;">رقم الباتش</th>
+                  <th style="width: 160px;">الصلاحية (شهر/سنة)</th>
+                  <th style="width: 130px;">الكمية</th>
+                  <th style="width: 130px;">سعر الوحدة</th>
+                  <th style="width: 85px;" class="text-center">إزالة</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <!-- تقدر تسيبه أو تمسحه -->
+          <button type="button" class="btn btn-outline-secondary" id="addLine">إضافة سطر</button>
+        </div>
+
+        <div class="col-12 col-md-2 d-grid">
+          <button class="btn btn-success" type="submit">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3 d-flex align-items-center justify-content-between">
+        <h2 class="h5 m-0">سجل الأرصدة الافتتاحية</h2>
+        <div class="muted">الإجمالي: <span data-total-count>{{ openings|length }}</span></div>
+      </div>
+      <div id="tableContainer">
+        {% include "opening_stock/table.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const itemsData = {{ items | tojson }};
+  const linesBody = document.querySelector('#linesTable tbody');
+  const openingForm = document.getElementById('openingForm');
+
+  function buildItemOptions() {
+    return ['<option value="">اختر الصنف</option>'].concat(
+      itemsData.map((i) =>
+        `<option value="${i.id}" data-price="${i.purchase_price}">${i.name}</option>`
+      )
+    ).join('');
+  }
+
+  function addLine() {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>
+        <select name="item_id" class="form-select item-select" required>
+          ${buildItemOptions()}
+        </select>
+      </td>
+      <td>
+        <input name="lot_code" class="form-control" required />
+      </td>
+      <td>
+        <input name="expiry_month" class="form-control" type="month" />
+      </td>
+      <td>
+        <input name="qty" class="form-control qty-input" type="number" step="0.01" min="0.01" required />
+      </td>
+      <td>
+        <input name="unit_price" class="form-control price-input" type="number" step="0.01" value="0" />
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn btn-sm btn-outline-danger remove-line">حذف</button>
+      </td>
+    `;
+    linesBody.appendChild(row);
+  }
+
+  // زر الإضافة
+  document.getElementById('addLine').addEventListener('click', () => {
+    addLine();
+    linesBody.lastElementChild.querySelector('select').focus();
+  });
+
+  // حذف سطر
+  linesBody.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-line')) {
+      e.target.closest('tr').remove();
+      if (linesBody.children.length === 0) addLine();
+    }
+  });
+
+  // تعبئة السعر تلقائيًا
+  linesBody.addEventListener('change', (e) => {
+    const row = e.target.closest('tr');
+    if (!row) return;
+
+    if (e.target.classList.contains('item-select')) {
+      const opt = e.target.selectedOptions[0];
+      if (opt && opt.dataset.price) {
+        row.querySelector('.price-input').value = opt.dataset.price;
+      }
+    }
+  });
+
+  // ❌ منع submit عند الضغط Enter
+  openingForm.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+    }
+  });
+
+  // ✅ Enter يضيف سطر جديد (لو أنت في آخر سطر)
+  linesBody.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+
+    const currentRow = e.target.closest('tr');
+    if (!currentRow) return;
+
+    const rows = Array.from(linesBody.querySelectorAll('tr'));
+    const isLastRow = rows[rows.length - 1] === currentRow;
+
+    if (isLastRow) {
+      e.preventDefault();
+      addLine();
+      linesBody.lastElementChild.querySelector('select').focus();
+    }
+  });
+
+  // أول تحميل
+  if (linesBody.children.length === 0) {
+    addLine();
+  }
+</script>

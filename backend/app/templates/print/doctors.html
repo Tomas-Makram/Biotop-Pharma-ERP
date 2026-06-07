@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <title>طباعة الأطباء</title>
+  <style>
+    .company-header { border: 1.5px solid #666; border-radius: 14px; padding: 10px 14px; margin-bottom: 16px; background: #f3f3f3; }
+    .company-header .header-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+    .company-header .header-title { text-align: center; font-size: 18px; font-weight: 700; letter-spacing: 0.2px; }
+    .company-header .header-left { font-size: 12px; color: #333; }
+    .company-header .header-right { font-size: 12px; color: #333; text-align: end; }
+    .company-header .header-sep { border-top: 1px solid #888; margin: 8px 0; }
+    .company-header .header-bottom { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
+    .company-logo img { max-height: 50px; max-width: 120px; object-fit: contain; }
+    .company-info { text-align: center; }
+    .company-name { font-size: 16px; font-weight: 700; }
+    .company-meta { font-size: 11px; color: #444; }
+    .company-header .doc-block { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .company-header .doc-title { font-size: 16px; font-weight: 700; }
+    .company-header .doc-meta { font-size: 11px; color: #444; text-align: end; }
+    body { font-family: Tahoma, Arial, sans-serif; padding: 24px; direction: rtl; }
+    h1 { margin: 0 0 8px; }
+    .muted { color: #666; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { border: 1px solid #999; padding: 6px 8px; font-size: 14px; }
+    th { background: #f2f2f2; }
+    .actions { margin-top: 12px; }
+    @media print { .actions { display: none; } }
+  </style>
+</head>
+<body>
+  {% set page_title = "طباعة الأطباء" %}
+  {% set page_meta = ["تاريخ الطباعة: " ~ print_date] %}
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>الاسم</th>
+        <th>الهاتف</th>
+        <th>ملاحظات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in doctors %}
+      <tr>
+        <td>{{ d.id }}</td>
+        <td>{{ d.name }}</td>
+        <td>{{ d.phone or '-' }}</td>
+        <td>{{ d.notes or '-' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="actions">
+    <button onclick="window.print()">طباعة</button>
+  </div>
+</body>
+</html>

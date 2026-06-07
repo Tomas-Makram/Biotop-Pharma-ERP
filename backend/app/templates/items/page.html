@@ -1,0 +1,25 @@
+﻿{% extends "base.html" %}
+
+{% block title %}الأصناف{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-3 no-print">
+    <div class="card p-3 h-100">
+      <h2 class="h5 mb-3">قائمة الأصناف</h2>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-primary" hx-get="/items/section/items" hx-target="#itemsSection" hx-swap="innerHTML">تسجيل الأصناف</button>
+        <button class="btn btn-outline-primary" hx-get="/items/section/item-units" hx-target="#itemsSection" hx-swap="innerHTML">عبوات الأصناف</button>
+        <button class="btn btn-outline-primary" hx-get="/items/section/opening-stock" hx-target="#itemsSection" hx-swap="innerHTML">رصيد أول المدة</button>
+        <button class="btn btn-outline-primary" hx-get="/items/section/damages" hx-target="#itemsSection" hx-swap="innerHTML">هالك/تالف</button>
+        <button class="btn btn-outline-primary" hx-get="/items/section/reports" hx-target="#itemsSection" hx-swap="innerHTML">تقارير</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-9">
+    <div id="itemsSection">
+      {% include "items/sections/items.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

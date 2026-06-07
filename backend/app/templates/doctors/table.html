@@ -1,0 +1,48 @@
+﻿<div id="doctors-table" data-total="{{ doctors|length }}">
+  {% if doctors|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد أطباء مضافة حتى الآن.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>الاسم</th>
+            <th>الهاتف</th>
+            <th style="width: 160px;" class="text-end">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in doctors %}
+          <tr>
+            <td>{{ d.id }}</td>
+            <td>{{ d.name }}</td>
+            <td>{{ d.phone or '-' }}</td>
+            <td class="text-end">
+              <details class="d-inline-block ms-2">
+                <summary class="btn btn-sm btn-outline-secondary">تعديل</summary>
+                <form class="mt-2" hx-post="/doctors/{{ d.id }}/update" hx-target="#tableContainer" hx-swap="innerHTML" data-alert-success="تم حفظ التعديل" data-alert-fail="تعذر حفظ التعديل">
+                  <div class="mb-2">
+                    <label class="form-label">الاسم</label>
+                    <input name="name" class="form-control" value="{{ d.name }}" required />
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">الهاتف</label>
+                    <input name="phone" class="form-control" value="{{ d.phone or '' }}" />
+                  </div>
+                  <button class="btn btn-sm btn-success">حفظ</button>
+                </form>
+              </details>
+              <button class="btn btn-danger btn-sm" hx-delete="/doctors/{{ d.id }}" hx-target="#tableContainer" hx-confirm="هل تريد حذف هذا الطبيب؟" data-alert-success="تم حذف الطبيب" data-alert-fail="تعذر حذف الطبيب">
+                حذف
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

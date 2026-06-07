@@ -1,0 +1,38 @@
+﻿<div id="additions-table" data-total="{{ additions|length }}">
+  {% if additions|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد إضافات مسجلة حتى الآن.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>التاريخ</th>
+            <th>الشهر</th>
+            <th>السنة</th>
+            <th>الموظف</th>
+            <th>وذلك عن</th>
+            <th>المبلغ</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in additions %}
+          <tr>
+            <td>{{ a.id }}</td>
+            <td>{{ a.date.strftime('%Y-%m-%d') if a.date else '-' }}</td>
+            <td>{{ a.month }}</td>
+            <td>{{ a.year }}</td>
+            <td>{{ a.rep.name if a.rep else '-' }}</td>
+            <td>{{ a.reason or '-' }}</td>
+            <td>{{ a.amount }}</td>
+            <td>{{ a.notes or '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

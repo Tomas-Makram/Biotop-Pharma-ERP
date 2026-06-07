@@ -1,0 +1,22 @@
+﻿{% extends "base.html" %}
+
+{% block title %}العملات{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-3 no-print">
+    <div class="card p-3 h-100">
+      <h2 class="h5 mb-3">قائمة العملات</h2>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-primary" hx-get="/currencies/section/locations" hx-target="#currenciesSection" hx-swap="innerHTML">الجهات</button>
+        <button class="btn btn-outline-primary" hx-get="/currencies/section/transfers" hx-target="#currenciesSection" hx-swap="innerHTML">التحويلات</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-9">
+    <div id="currenciesSection">
+      {% include "items/sections/locations.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

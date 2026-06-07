@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}تسجيل الدخول{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-5">
+    <div class="card p-4 shadow-sm">
+      <style>
+        .login-logo {
+          max-width: 260px;
+          max-height: 150px;
+          width: 100%;
+          height: auto;
+          object-fit: contain;
+        }
+      </style>
+
+      {% if settings and (settings.logo_url or settings.logo_path) %}
+        {% set logo_src = settings.logo_url or settings.logo_path %}
+        <div class="text-center mb-3">
+          <img src="{{ logo_src }}" class="login-logo" alt="Logo">
+        </div>
+      {% endif %}
+
+      <h1 class="h5 mb-3">تسجيل الدخول</h1>
+
+      {% if error %}
+        <div class="alert alert-danger py-2">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" action="/login" class="row g-3">
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <div class="col-12">
+          <label class="form-label">اسم المستخدم</label>
+          <input name="username" class="form-control" required />
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">كلمة المرور</label>
+          <input type="password" name="password" class="form-control" required />
+        </div>
+
+        <div class="col-12 d-grid">
+          <button class="btn btn-primary">دخول</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

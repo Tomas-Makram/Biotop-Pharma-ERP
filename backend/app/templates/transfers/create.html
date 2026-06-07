@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}تحويل جديد{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h3 m-0">تحويل جديد</h1>
+  <a class="btn btn-outline-secondary" href="/transfers">رجوع</a>
+</div>
+
+{% if errors %}
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      {% for err in errors %}
+        <li>{{ err }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+<form method="post" action="/transfers/new" class="card p-4" id="transferForm">
+  <div class="row g-3">
+    <div class="col-12 col-md-3">
+      <label class="form-label">التاريخ</label>
+      <input name="date" type="date" class="form-control" value="{{ today }}" />
+    </div>
+    <div class="col-12 col-md-4">
+      <label class="form-label">من موقع</label>
+      <select name="from_location_id" class="form-select" required>
+        <option value="">اختر</option>
+        {% for loc in locations %}
+          <option value="{{ loc.id }}">{{ loc.name }} ({{ 'صيدلية' if loc.type == 'pharmacy' else 'مخزن' }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-4">
+      <label class="form-label">إلى موقع</label>
+      <select name="to_location_id" class="form-select" id="toLocation" required>
+        <option value="">اختر</option>
+        {% for loc in locations %}
+          <option value="{{ loc.id }}" data-type="{{ loc.type }}">{{ loc.name }} ({{ 'صيدلية' if loc.type == 'pharmacy' else 'مخزن' }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">المندوب</label>
+      <select name="rep_id" class="form-select">
+        <option value="">بدون</option>
+        {% for r in reps %}
+          <option value="{{ r.id }}">{{ r.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12">
+      <label class="form-label">ملاحظات</label>
+      <input name="notes" class="form-control" />
+    </div>
+  </div>
+
+  <hr class="my-4" />
+
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <h2 class="h5 m-0">بنود التحويل</h2>
+    <button type="button" class="btn btn-outline-primary" id="addRow">إضافة بند</button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle" id="itemsTable">
+      <thead class="table-light">
+        <tr>
+          <th>الصنف</th>
+          <th style="width: 120px;">الكمية</th>
+          <th style="width: 140px;">سعر البيع</th>
+          <th style="width: 200px;">الطبيب (للتوزيع)</th>
+          <th style="width: 140px;">الإجمالي</th>
+          <th style="width: 80px;">حذف</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="text-end">
+    <button class="btn btn-success">حفظ التحويل</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const items = {{ items|tojson }};
+  const doctors = {{ doctors|tojson }};
+  const tbody = document.querySelector('#itemsTable tbody');
+  const toLocation = document.getElementById('toLocation');
+
+  function addRow() {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <select name="item_id" class="form-select" required>
+          <option value="">اختر صنف</option>
+          ${items.map(i => `<option value="${i.id}">${i.name}</option>`).join('')}
+        </select>
+      </td>
+      <td><input name="requested_qty" class="form-control" inputmode="decimal" value="0" /></td>
+      <td><input name="unit_price" class="form-control" inputmode="decimal" value="0" /></td>
+      <td>
+        <select name="doctor_id" class="form-select doctor-select">
+          <option value="">بدون</option>
+          ${doctors.map(d => `<option value="${d.id}">${d.name}</option>`).join('')}
+        </select>
+      </td>
+      <td><input class="form-control" value="0" readonly /></td>
+      <td class="text-center"><button type="button" class="btn btn-sm btn-danger">حذف</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function recalcRow(tr) {
+    const qty = parseFloat(tr.querySelector('input[name="requested_qty"]').value || '0');
+    const price = parseFloat(tr.querySelector('input[name="unit_price"]').value || '0');
+    const total = qty * price;
+    tr.querySelector('td:nth-child(5) input').value = total.toFixed(2);
+  }
+
+  function fillPriceFromItem(tr) {
+    const select = tr.querySelector('select[name="item_id"]');
+    const itemId = select.value;
+    const item = items.find(i => String(i.id) === String(itemId));
+    if (!item) return;
+    const priceInput = tr.querySelector('input[name="unit_price"]');
+    priceInput.value = (item.sale_price ?? 0).toFixed(2);
+    recalcRow(tr);
+  }
+
+  function toggleDoctorSelects() {
+    const toOption = toLocation.options[toLocation.selectedIndex];
+    const isPharmacy = toOption && toOption.dataset.type === 'pharmacy';
+    document.querySelectorAll('.doctor-select').forEach((el) => {
+      el.disabled = !isPharmacy;
+      if (!isPharmacy) el.value = '';
+    });
+  }
+
+  document.getElementById('addRow').addEventListener('click', addRow);
+  toLocation.addEventListener('change', toggleDoctorSelects);
+
+  tbody.addEventListener('change', (e) => {
+    if (e.target.matches('select[name="item_id"]')) {
+      const tr = e.target.closest('tr');
+      if (tr) fillPriceFromItem(tr);
+    }
+  });
+
+  tbody.addEventListener('input', (e) => {
+    const tr = e.target.closest('tr');
+    if (tr) recalcRow(tr);
+  });
+
+  tbody.addEventListener('click', (e) => {
+    if (e.target.matches('.btn-danger')) {
+      e.target.closest('tr').remove();
+    }
+  });
+
+  addRow();
+  toggleDoctorSelects();
+</script>
+{% endblock %}

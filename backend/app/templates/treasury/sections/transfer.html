@@ -1,0 +1,115 @@
+﻿<div class="row g-3">
+  <div class="col-12">
+    <div id="pageAlert" class="alert d-none"></div>
+  </div>
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h1 class="h4 m-0">تحويل بين الخزن</h1>
+        <div class="muted">حركة تحويل أموال بين الخزنة الرئيسية وخزن المندوبين</div>
+      </div>
+
+      <hr class="my-4" />
+
+      <form class="row g-3 align-items-end" hx-post="/treasury/transfer" hx-target="#treasurySection" hx-swap="innerHTML" data-alert-success="تم التحويل" data-alert-fail="فشل التحويل">
+        <div class="col-12 col-md-4">
+          <label class="form-label">من خزنة</label>
+          <select name="from_account_id" class="form-select" required>
+            <option value="">اختر الخزنة</option>
+            {% for acc in accounts %}
+              <option value="{{ acc.id }}">{{ acc.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">إلى خزنة</label>
+          <select name="to_account_id" class="form-select" required>
+            <option value="">اختر الخزنة</option>
+            {% for acc in accounts %}
+              <option value="{{ acc.id }}">{{ acc.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label">المبلغ</label>
+          <input name="amount" type="number" step="0.01" class="form-control" value="0" />
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label">التاريخ</label>
+          <input name="date" type="date" class="form-control" value="{{ today }}" />
+        </div>
+        <div class="col-12 col-md-8">
+          <label class="form-label">بيان</label>
+          <input name="notes" class="form-control" />
+        </div>
+        <div class="col-12 col-md-4 d-grid">
+          <button class="btn btn-success" type="submit">تحويل</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3">
+        <h2 class="h5 m-0">أرصدة الخزن</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>الخزنة</th>
+              <th>الرصيد الحالي</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for acc in accounts %}
+            <tr>
+              <td>{{ acc.name }}</td>
+              <td>{{ '%.2f'|format(balances.get(acc.id, 0)) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3">
+        <h2 class="h5 m-0">آخر التحويلات</h2>
+      </div>
+      {% if transfers|length == 0 %}
+        <div class="p-3">
+          <div class="alert alert-info mb-0">لا توجد تحويلات حتى الآن.</div>
+        </div>
+      {% else %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>التاريخ</th>
+                <th>من</th>
+                <th>إلى</th>
+                <th>المبلغ</th>
+                <th>بيان</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in transfers %}
+              <tr>
+                <td>{{ t.date.strftime('%Y-%m-%d') if t.date else '-' }}</td>
+                <td>{{ t.from_account.name if t.from_account else '-' }}</td>
+                <td>{{ t.to_account.name if t.to_account else '-' }}</td>
+                <td>{{ '%.2f'|format(t.amount or 0) }}</td>
+                <td>{{ t.notes or '-' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

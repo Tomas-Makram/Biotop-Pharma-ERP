@@ -1,0 +1,77 @@
+<div id="purchase-lines">
+  {% if message %}
+    <div class="p-3">
+      <div class="alert alert-danger mb-0">{{ message }}</div>
+    </div>
+  {% endif %}
+  {% if purchase %}
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>الصنف</th>
+          <th>كود التشغيل</th>
+          <th style="width: 140px;">الصلاحية</th>
+          <th style="width: 110px;">الكمية</th>
+          <th style="width: 110px;">بونص</th>
+          <th style="width: 120px;">ض.ق.م</th>
+          <th style="width: 120px;">خصم أساسي %</th>
+          <th style="width: 120px;">خصم إضافي %</th>
+          <th style="width: 130px;">سعر الشراء</th>
+          <th style="width: 140px;">الإجمالي</th>
+          <th style="width: 200px;" class="text-end">إجراءات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in purchase.items %}
+        <tr>
+          <td>{{ line.item.name if line.item else '-' }}</td>
+          <td>{{ line.lot.lot_code if line.lot else '-' }}</td>
+          <td>{{ line.lot.expiry_date.strftime('%m/%Y') if line.lot and line.lot.expiry_date else '-' }}</td>
+          <td>{{ line.qty }}</td>
+          <td>{{ line.bonus_qty or 0 }}</td>
+          <td>{{ line.tax_amount or 0 }}</td>
+          <td>{{ line.discount_base or 0 }}</td>
+          <td>{{ line.discount_extra or 0 }}</td>
+          <td>{{ line.unit_price }}</td>
+          <td>{{ line.total }}</td>
+          <td class="text-end">
+            <details class="d-inline-block">
+              <summary class="btn btn-sm btn-outline-secondary">تعديل</summary>
+              <form class="mt-2" hx-post="/purchases/items/{{ line.id }}/update" hx-target="#purchase-lines" hx-swap="innerHTML" data-alert-success="تم تعديل البند" data-alert-fail="فشل تعديل البند">
+                <div class="mb-2">
+                  <label class="form-label">الكمية</label>
+                  <input name="qty" type="number" step="0.01" min="0.01" class="form-control" value="{{ line.qty }}" required />
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">سعر الشراء</label>
+                  <input name="unit_price" type="number" step="0.01" min="0" class="form-control" value="{{ line.unit_price }}" required />
+                </div>
+                <button class="btn btn-sm btn-success">حفظ</button>
+              </form>
+            </details>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot class="table-light">
+        <tr>
+          <th colspan="4" class="text-end">إجمالي المشتريات</th>
+          <th>{{ purchase.subtotal }}</th>
+          <th></th>
+        </tr>
+        <tr>
+          <th colspan="4" class="text-end">تكلفة الشحن</th>
+          <th>{{ purchase.shipping_cost }}</th>
+          <th></th>
+        </tr>
+        <tr>
+          <th colspan="4" class="text-end">الإجمالي النهائي</th>
+          <th>{{ purchase.total }}</th>
+          <th></th>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  {% endif %}
+</div>

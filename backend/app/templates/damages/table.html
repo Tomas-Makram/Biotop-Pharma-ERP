@@ -1,0 +1,43 @@
+﻿<div id="damages-table" data-total="{{ damages|length }}">
+  {% if message %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">{{ message }}</div>
+    </div>
+  {% endif %}
+  {% if damages|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد حركات هالك حتى الآن.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>التاريخ</th>
+            <th>المخزن</th>
+            <th>عدد الأصناف</th>
+            <th>ملاحظات</th>
+            <th style="width: 140px;" class="text-end">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for dmg in damages %}
+          <tr>
+            <td>{{ dmg.id }}</td>
+            <td>{{ dmg.date.strftime('%Y-%m-%d') if dmg.date else '-' }}</td>
+            <td>{{ dmg.location.name if dmg.location else '-' }}</td>
+            <td>{{ dmg.lines|length }}</td>
+            <td>{{ dmg.notes or '-' }}</td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-danger" hx-delete="/damages/{{ dmg.id }}" hx-target="#tableContainer" hx-confirm="هل أنت متأكد من الحذف؟" data-alert-success="تم حذف الهالك" data-alert-fail="فشل حذف الهالك">
+                حذف
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

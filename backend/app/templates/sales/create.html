@@ -1,0 +1,130 @@
+﻿{% extends "base.html" %}
+
+{% block title %}توزيع جديد{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h3 m-0">توزيع جديد</h1>
+  <a class="btn btn-outline-secondary" href="/sales">عودة إلى القائمة</a>
+</div>
+
+{% if errors and errors|length > 0 %}
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      {% for err in errors %}
+        <li>{{ err }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+<form method="post" action="/sales/new" class="card p-4" id="saleForm">
+  <div class="row g-3">
+    <div class="col-12 col-md-3">
+      <label class="form-label">التاريخ</label>
+      <input name="date" type="date" class="form-control" value="{{ today }}" />
+    </div>
+    <div class="col-12 col-md-5">
+      <label class="form-label">الصيدلية</label>
+      <select name="pharmacy_id" class="form-select" required>
+        <option value="">اختر صيدلية</option>
+        {% for p in pharmacies %}
+          <option value="{{ p.id }}">{{ p.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-4">
+      <label class="form-label">ملاحظات</label>
+      <textarea name="notes" class="form-control" rows="1"></textarea>
+    </div>
+  </div>
+
+  <hr class="my-4" />
+
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <h2 class="h5 m-0">بنود الفاتورة</h2>
+    <button type="button" class="btn btn-outline-primary" id="addRow">إضافة بند</button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle" id="itemsTable">
+      <thead class="table-light">
+        <tr>
+          <th>الصنف</th>
+          <th style="width: 120px;">الكمية</th>
+          <th style="width: 140px;">الإجمالي</th>
+          <th style="width: 80px;">حذف</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="text-end">
+    <button class="btn btn-success">حفظ التوزيع</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const items = {{ items|tojson }};
+  const tbody = document.querySelector('#itemsTable tbody');
+
+  function addRow() {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <select name="item_id" class="form-select">
+          <option value="">اختر صنف</option>
+          ${items.map(i => `<option value="${i.id}">${i.name}</option>`).join('')}
+        </select>
+        <input type="hidden" name="unit_price" value="0" />
+      </td>
+      <td><input name="qty" class="form-control" inputmode="decimal" value="0" /></td>
+      <td><input class="form-control" value="0" readonly /></td>
+      <td class="text-center"><button type="button" class="btn btn-sm btn-danger">حذف</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function recalcRow(tr) {
+    const qty = parseFloat(tr.querySelector('input[name="qty"]').value || '0');
+    const price = parseFloat(tr.querySelector('input[name="unit_price"]').value || '0');
+    const total = qty * price;
+    tr.querySelector('td:nth-child(3) input').value = total.toFixed(2);
+  }
+
+  function fillPriceFromItem(tr) {
+    const select = tr.querySelector('select[name="item_id"]');
+    const itemId = select.value;
+    const item = items.find(i => String(i.id) === String(itemId));
+    if (!item) return;
+    const priceInput = tr.querySelector('input[name="unit_price"]');
+    priceInput.value = (item.sale_price ?? 0).toFixed(2);
+    recalcRow(tr);
+  }
+
+  document.getElementById('addRow').addEventListener('click', addRow);
+
+  tbody.addEventListener('change', (e) => {
+    if (e.target.matches('select[name="item_id"]')) {
+      const tr = e.target.closest('tr');
+      if (tr) fillPriceFromItem(tr);
+    }
+  });
+
+  tbody.addEventListener('input', (e) => {
+    const tr = e.target.closest('tr');
+    if (tr) recalcRow(tr);
+  });
+
+  tbody.addEventListener('click', (e) => {
+    if (e.target.matches('.btn-danger')) {
+      e.target.closest('tr').remove();
+    }
+  });
+
+  addRow();
+</script>
+{% endblock %}

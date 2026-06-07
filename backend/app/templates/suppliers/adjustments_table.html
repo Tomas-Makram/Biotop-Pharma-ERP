@@ -1,0 +1,40 @@
+﻿<div id="suppliers-adjustments" data-total="{{ adjustments|length }}">
+  {% if adjustments|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد إشعارات مسجلة.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">مسلسل</th>
+            <th>المورد</th>
+            <th>التاريخ</th>
+            <th>النوع</th>
+            <th>القيمة</th>
+            <th>وذلك عن</th>
+            <th style="width: 120px;" class="text-end">إجراء</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in adjustments %}
+          <tr>
+            <td>{{ a.id }}</td>
+            <td>{{ a.supplier.name if a.supplier else '-' }}</td>
+            <td>{{ a.date.strftime('%Y-%m-%d') if a.date else '-' }}</td>
+            <td>{{ 'خصم' if a.adjustment_type == 'discount' else 'إضافة' }}</td>
+            <td>{{ '%.2f'|format(a.amount or 0) }}</td>
+            <td>{{ a.notes or '-' }}</td>
+            <td class="text-end">
+              <button class="btn btn-danger btn-sm" hx-delete="/suppliers/adjustments/{{ a.id }}" hx-target="#adjustmentsTableContainer" hx-confirm="هل أنت متأكد من الحذف؟" data-alert-success="تم حذف الإشعار" data-alert-fail="فشل حذف الإشعار">
+                حذف
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

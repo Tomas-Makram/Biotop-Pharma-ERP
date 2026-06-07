@@ -1,0 +1,41 @@
+<div id="other-expenses-table" data-total="{{ expenses|length }}">
+  {% if errors %}
+    <div class="p-3">
+      <div class="alert alert-danger mb-0">
+        <ul class="mb-0">
+          {% for err in errors %}
+          <li>{{ err }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  {% endif %}
+  {% if expenses|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد مصاريف أخرى بعد.</div>
+    </div>
+  {% else %}
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 140px;">التاريخ</th>
+          <th>الجهة</th>
+          <th style="width: 140px;">المبلغ</th>
+          <th>ملاحظات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in expenses %}
+        <tr>
+          <td>{{ row.date.strftime('%Y-%m-%d') if row.date else '-' }}</td>
+          <td>{{ row.title }}</td>
+          <td>{{ '%.2f'|format(row.amount or 0) }}</td>
+          <td>{{ row.notes or '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>

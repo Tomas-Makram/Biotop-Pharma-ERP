@@ -1,0 +1,23 @@
+﻿{% extends "base.html" %}
+
+{% block title %}الموردين{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-3">
+    <div class="card p-3 h-100">
+      <h2 class="h5 mb-3">قائمة الموردين</h2>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-primary" hx-get="/suppliers/section/suppliers" hx-target="#suppliersSection" hx-swap="innerHTML">تسجيل مورد جديد</button>
+        <button class="btn btn-outline-primary" hx-get="/suppliers/section/adjustments" hx-target="#suppliersSection" hx-swap="innerHTML">إشعار خصم / إضافة</button>
+        <button class="btn btn-outline-primary" hx-get="/suppliers/section/reports" hx-target="#suppliersSection" hx-swap="innerHTML">تقارير الموردين</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-9">
+    <div id="suppliersSection">
+      {% include "suppliers/sections/suppliers_list.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

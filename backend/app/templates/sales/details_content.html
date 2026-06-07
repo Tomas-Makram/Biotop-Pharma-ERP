@@ -1,0 +1,43 @@
+﻿<div id="detailsContainer">
+  <div class="card p-4 mb-3">
+    <div class="row g-3 align-items-center">
+      <div class="col-12 col-md-4"><strong>الصيدلية:</strong> {{ sale.pharmacy.name if sale.pharmacy else '-' }}</div>
+      <div class="col-12 col-md-4"><strong>التاريخ:</strong> {{ sale.date.strftime('%Y-%m-%d') if sale.date else '-' }}</div>
+      <div class="col-12 col-md-4"><strong>الإجمالي:</strong> {{ sale.total }}</div>
+      <div class="col-12"><strong>ملاحظات:</strong> {{ sale.notes or '-' }}</div>
+      <div class="col-12">
+        <details>
+          <summary class="btn btn-sm btn-outline-secondary">تعديل بيانات الفاتورة</summary>
+          <form class="row g-3 mt-2" hx-post="/sales/{{ sale.id }}/update-details" hx-target="#detailsContainer" hx-swap="innerHTML" data-alert-success="تم تعديل الفاتورة" data-alert-fail="فشل تعديل الفاتورة">
+            <div class="col-12 col-md-4">
+              <label class="form-label">التاريخ</label>
+              <input name="date" type="date" class="form-control" value="{{ sale.date.strftime('%Y-%m-%d') if sale.date else '' }}" required />
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">الصيدلية</label>
+              <select name="pharmacy_id" class="form-select" required>
+                <option value="">اختر صيدلية</option>
+                {% for p in pharmacies %}
+                  <option value="{{ p.id }}" {% if sale.pharmacy_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-12 col-md-4">
+              <label class="form-label">ملاحظات</label>
+              <input name="notes" class="form-control" value="{{ sale.notes or '' }}" />
+            </div>
+            <div class="col-12 d-grid">
+              <button class="btn btn-success btn-sm">حفظ</button>
+            </div>
+          </form>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <div class="card p-0 overflow-hidden">
+    <div id="tableContainer">
+      {% include "sales/lines_table.html" with context %}
+    </div>
+  </div>
+</div>

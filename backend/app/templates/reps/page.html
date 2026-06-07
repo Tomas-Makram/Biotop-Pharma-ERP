@@ -1,0 +1,25 @@
+﻿{% extends "base.html" %}
+
+{% block title %}الموظفين{% endblock %}
+
+{% block content %}
+<div class="row g-3 flex-lg-row-reverse">
+  <div class="col-12 col-lg-9">
+    <div id="repsSection">
+      {% include "reps/sections/employees.html" %}
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-3">
+    <div class="card p-3">
+      <h2 class="h6 mb-3">قائمة الموظفين</h2>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-primary" hx-get="/reps/section/employees" hx-target="#repsSection" hx-swap="innerHTML">تسجيل الموظفين</button>
+        <button class="btn btn-outline-primary" hx-get="/reps/section/adjustments" hx-target="#repsSection" hx-swap="innerHTML">خصم / إضافة</button>
+        <button class="btn btn-outline-primary" hx-get="/reps/section/salaries" hx-target="#repsSection" hx-swap="innerHTML">المرتبات</button>
+        <button class="btn btn-outline-primary" hx-get="/reps/section/reports" hx-target="#repsSection" hx-swap="innerHTML">تقارير الموظفين</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

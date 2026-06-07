@@ -1,0 +1,88 @@
+﻿{% extends "base.html" %}
+
+{% block title %}فاتورة بيع{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h4 m-0">فاتورة بيع #{{ sale.id }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="/sales">رجوع</a>
+    <a class="btn btn-outline-primary" href="/sales/{{ sale.id }}/print" target="_blank">طباعة</a>
+  </div>
+</div>
+
+<div class="card p-4 mb-3">
+  <div class="row g-3">
+    <div class="col-12 col-md-4"><strong>التاريخ:</strong> {{ sale.date.strftime('%Y-%m-%d') if sale.date else '-' }}</div>
+    <div class="col-12 col-md-4"><strong>المخزن:</strong> {{ sale.from_location.name if sale.from_location else '-' }}</div>
+    <div class="col-12 col-md-4"><strong>العميل:</strong> {{ sale.to_location.name if sale.to_location else '-' }}</div>
+    <div class="col-12 col-md-4"><strong>المندوب:</strong> {{ sale.rep.name if sale.rep else '-' }}</div>
+    <div class="col-12 col-md-4"><strong>فئة التسعير:</strong> {{ sale.price_category or '-' }}</div>
+    <div class="col-12 col-md-4"><strong>الرقم الضريبي:</strong> 667-526-285</div>
+    <div class="col-12 col-md-4"><strong>السجل التجاري:</strong> 9842</div>
+    <div class="col-12"><strong>ملاحظات:</strong> {{ sale.notes or '-' }}</div>
+  </div>
+</div>
+
+<div class="card p-3 mb-3">
+  <div class="row g-2">
+    <div class="col-12 col-md-4"><strong>الرصيد السابق:</strong> {{ '%.2f'|format(prev_balance or 0) }}</div>
+    <div class="col-12 col-md-4"><strong>إجمالي الفاتورة:</strong> {{ '%.2f'|format(invoice_total or 0) }}</div>
+    <div class="col-12 col-md-4"><strong>الرصيد بعد الفاتورة:</strong> {{ '%.2f'|format(new_balance or 0) }}</div>
+    <div class="col-12 col-md-4"><strong>المسدد:</strong> {{ '%.2f'|format(paid_total or 0) }}</div>
+    <div class="col-12 col-md-4"><strong>المتبقي:</strong> {{ '%.2f'|format(remaining_total or 0) }}</div>
+  </div>
+</div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>الصنف</th>
+          <th>الكمية</th>
+          <th>سعر البيع</th>
+          <th>البونص (علب)</th>
+          <th>خصم %</th>
+          <th>الإجمالي</th>
+          <th>تفاصيل الدفعات</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in sale.lines %}
+        <tr>
+          <td>{{ line.item.name if line.item else '-' }}</td>
+          <td>{{ line.requested_qty }}</td>
+          <td>{{ line.unit_price }}</td>
+          <td>{{ line.bonus_amount or 0 }}</td>
+          <td>{{ line.discount_amount or 0 }}</td>
+          <td>{{ '%.2f'|format(line.line_total or 0) }}</td>
+          <td>
+            <table class="table table-sm mb-0">
+              <thead>
+                <tr>
+                  <th>رقم الباتش</th>
+                  <th>الصلاحية</th>
+                  <th>الكمية</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for alloc in line.allocations %}
+                <tr>
+                  <td>{{ alloc.lot_code_snapshot }}</td>
+                  <td>{{ alloc.lot.expiry_date.strftime('%m/%Y') if alloc.lot and alloc.lot.expiry_date else '-' }}</td>
+                  <td>{{ alloc.qty }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+

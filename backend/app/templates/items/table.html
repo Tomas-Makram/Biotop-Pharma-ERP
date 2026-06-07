@@ -1,0 +1,83 @@
+﻿<div id="items-table" data-total="{{ items|length }}">
+  {% if items|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد بيانات حتى الآن.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>فئة الصنف</th>
+            <th>اسم الصنف</th>
+            <th>الوحدة</th>
+            <th>سعر الشراء</th>
+            <th>سعر البيع</th>
+            <th>المتبقي</th>
+            <th>الحالة</th>
+            <th style="width: 220px;" class="text-end">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>{{ item.id }}</td>
+            <td>{% if item.item_kind == 'private' %}خاص{% else %}عام{% endif %}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.unit or '-' }}</td>
+            <td>{{ item.purchase_price }}</td>
+            <td>{{ item.sale_price }}</td>
+            <td>{{ stock_map.get(item.id, 0) }}</td>
+            <td>
+              {% if item.is_active %}
+                <span class="badge bg-success">نشط</span>
+              {% else %}
+                <span class="badge bg-secondary">غير نشط</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <details class="d-inline-block ms-2">
+                <summary class="btn btn-sm btn-outline-secondary">تعديل</summary>
+                <form class="mt-2" hx-post="/items/{{ item.id }}/update" hx-target="#itemsTableContainer" hx-swap="innerHTML" data-alert-success="تم تعديل الصنف" data-alert-fail="فشل تعديل الصنف">
+                  <div class="mb-2">
+                    <label class="form-label">اسم الصنف</label>
+                    <input name="name" class="form-control" value="{{ item.name }}" required />
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">فئة الصنف</label>
+                    <select name="item_kind" class="form-select">
+                      <option value="general" {% if item.item_kind != 'private' %}selected{% endif %}>عام</option>
+                      <option value="private" {% if item.item_kind == 'private' %}selected{% endif %}>خاص</option>
+                    </select>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">الوحدة</label>
+                    <input name="unit" class="form-control" value="{{ item.unit or '' }}" />
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">سعر البيع</label>
+                    <input name="sale_price" class="form-control" type="number" step="0.01" value="{{ item.sale_price }}" />
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label">ملاحظات</label>
+                    <input name="notes" class="form-control" value="{{ item.notes or '' }}" />
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="is_active" {% if item.is_active %}checked{% endif %} />
+                    <label class="form-check-label">نشط</label>
+                  </div>
+                  <button class="btn btn-sm btn-success">حفظ</button>
+                </form>
+              </details>
+              <button class="btn btn-danger btn-sm" hx-delete="/items/{{ item.id }}" hx-target="#itemsTableContainer" hx-confirm="هل أنت متأكد من الحذف؟" data-alert-success="تم حذف الصنف" data-alert-fail="فشل حذف الصنف">
+                حذف
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

@@ -1,0 +1,143 @@
+﻿{% extends "base.html" %}
+
+{% block title %}ØªØ¹Ø¯ÙŠÙ„ Ø±ØµÙŠØ¯ Ø£ÙˆÙ„ Ø§Ù„Ù…Ø¯Ø©{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h1 class="h4 m-0">ØªØ¹Ø¯ÙŠÙ„ Ø±ØµÙŠØ¯ Ø£ÙˆÙ„ Ø§Ù„Ù…Ø¯Ø© Ø±Ù‚Ù… {{ opening.id }}</h1>
+        <a class="btn btn-outline-secondary" href="/opening-stock">Ø±Ø¬ÙˆØ¹</a>
+      </div>
+
+      {% if message %}
+      <div class="alert alert-danger mt-3 mb-0">{{ message }}</div>
+      {% endif %}
+
+      <hr class="my-4" />
+
+      <form id="openingEditForm" class="row g-3" method="post" action="/opening-stock/{{ opening.id }}/update">
+        <div class="col-12 col-md-3">
+          <label class="form-label">Ø§Ù„ØªØ§Ø±ÙŠØ®</label>
+          <input name="date" type="date" class="form-control" value="{{ opening.date.strftime('%Y-%m-%d') if opening.date else '' }}" />
+        </div>
+        <div class="col-12 col-md-4">
+          <label class="form-label">Ø§Ù„Ù…Ø®Ø²Ù†</label>
+          <select name="location_id" class="form-select" required>
+            <option value="">Ø§Ø®ØªØ± Ø§Ù„Ù…Ø®Ø²Ù†</option>
+            {% for loc in locations %}
+              <option value="{{ loc.id }}" {% if opening.location_id == loc.id %}selected{% endif %}>{{ loc.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-5">
+          <label class="form-label">Ù…Ù„Ø§Ø­Ø¸Ø§Øª</label>
+          <input name="notes" class="form-control" value="{{ opening.notes or '' }}" />
+        </div>
+
+        <div class="col-12">
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle" id="linesTable">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 260px;">Ø§Ù„ØµÙ†Ù</th>
+                  <th style="width: 125px;">Ø±Ù‚Ù… Ø§Ù„Ø¨Ø§ØªØ´</th>
+                  <th style="width: 160px;">Ø§Ù„ØµÙ„Ø§Ø­ÙŠØ© (Ø´Ù‡Ø±/Ø³Ù†Ø©)</th>
+                  <th style="width: 130px;">Ø§Ù„ÙƒÙ…ÙŠØ©</th>
+                  <th style="width: 130px;">Ø³Ø¹Ø± Ø§Ù„ÙˆØ­Ø¯Ø©</th>
+                  <th style="width: 85px;" class="text-center">Ø¥Ø²Ø§Ù„Ø©</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <button type="button" class="btn btn-outline-secondary" id="addLine">Ø¥Ø¶Ø§ÙØ© Ø³Ø·Ø±</button>
+        </div>
+
+        <div class="col-12 d-grid">
+          <button class="btn btn-success" type="submit">Ø­ÙØ¸ Ø§Ù„ØªØ¹Ø¯ÙŠÙ„</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const itemsData = {{ items | tojson }};
+  const existingLines = {{ existing_lines | tojson }};
+  const linesBody = document.querySelector('#linesTable tbody');
+
+  function escapeAttr(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function buildItemOptions(selectedId = null) {
+    const selectedKey = selectedId === null || selectedId === undefined ? '' : String(selectedId);
+    const options = ['<option value="">Ø§Ø®ØªØ± Ø§Ù„ØµÙ†Ù</option>'];
+    itemsData.forEach((item) => {
+      const isSelected = String(item.id) === selectedKey ? 'selected' : '';
+      options.push(`<option value="${item.id}" data-price="${item.purchase_price}" ${isSelected}>${item.name}</option>`);
+    });
+    return options.join('');
+  }
+
+  function addLine(initial = {}) {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>
+        <select name="item_id" class="form-select item-select" required>
+          ${buildItemOptions(initial.item_id)}
+        </select>
+      </td>
+      <td>
+        <input name="lot_code" class="form-control" required value="${escapeAttr(initial.lot_code)}" />
+      </td>
+      <td>
+        <input name="expiry_month" class="form-control" type="month" value="${escapeAttr(initial.expiry_month)}" />
+      </td>
+      <td>
+        <input name="qty" class="form-control qty-input" type="number" step="0.01" min="0.01" required value="${initial.qty ?? ''}" />
+      </td>
+      <td>
+        <input name="unit_price" class="form-control price-input" type="number" step="0.01" value="${initial.unit_price ?? '0'}" />
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn btn-sm btn-outline-danger remove-line">Ø­Ø°Ù</button>
+      </td>
+    `;
+    linesBody.appendChild(row);
+  }
+
+  document.getElementById('addLine').addEventListener('click', () => addLine());
+
+  linesBody.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-line')) {
+      e.target.closest('tr').remove();
+    }
+  });
+
+  linesBody.addEventListener('change', (e) => {
+    const row = e.target.closest('tr');
+    if (!row) return;
+    if (e.target.classList.contains('item-select')) {
+      const opt = e.target.selectedOptions[0];
+      if (opt && opt.dataset.price && !row.querySelector('.price-input').value) {
+        row.querySelector('.price-input').value = opt.dataset.price;
+      }
+    }
+  });
+
+  if (existingLines.length > 0) {
+    existingLines.forEach((line) => addLine(line));
+  } else {
+    addLine();
+  }
+</script>
+{% endblock %}

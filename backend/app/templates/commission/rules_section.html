@@ -1,0 +1,81 @@
+﻿<div class="row g-3">
+  <div class="col-12">
+    <div id="pageAlert" class="alert d-none"></div>
+  </div>
+  <div class="col-12">
+    <div class="card p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h1 class="h3 m-0">قواعد عمولة الأطباء</h1>
+        <a class="btn btn-outline-secondary" href="/commission/ledger">كشف حساب الأطباء</a>
+      </div>
+
+      <hr class="my-4"/>
+
+      <form class="row g-3 align-items-end" hx-post="/commission/rules" hx-target="#tableContainer" hx-swap="innerHTML" hx-on="htmx:afterRequest: this.reset()" data-alert-success="تمت إضافة قاعدة العمولة" data-alert-fail="فشل إضافة قاعدة العمولة">
+        <div class="col-12 col-md-3">
+          <label class="form-label">الطبيب</label>
+          <select name="doctor_id" class="form-select" required>
+            <option value="">اختر الطبيب</option>
+            {% for d in doctors %}
+              <option value="{{ d.id }}">{{ d.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label">الصيدلية</label>
+          <select name="pharmacy_id" class="form-select" required>
+            <option value="">اختر الصيدلية</option>
+            {% for p in pharmacies %}
+              <option value="{{ p.id }}">{{ p.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-3">
+          <label class="form-label">الصنف</label>
+          <select name="item_id" class="form-select" required>
+            <option value="">اختر الصنف</option>
+            {% for i in items %}
+              <option value="{{ i.id }}">{{ i.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label">نوع العمولة</label>
+          <select name="commission_type" class="form-select">
+            <option value="percent">نسبة مئوية</option>
+            <option value="fixed_per_box">قيمة لكل علبة</option>
+          </select>
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label">قيمة العمولة</label>
+          <input name="commission_value" class="form-control" type="number" step="0.01" value="0" />
+        </div>
+        <div class="col-12 col-md-2">
+          <label class="form-label">ملاحظات</label>
+          <input name="notes" class="form-control" />
+        </div>
+        <div class="col-12 col-md-1">
+          <label class="form-label">نشط</label>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="active" checked>
+            <label class="form-check-label">نعم</label>
+          </div>
+        </div>
+        <div class="col-12 col-md-2 d-grid">
+          <button class="btn btn-success" type="submit">حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <div class="card p-0 overflow-hidden">
+      <div class="p-3 d-flex align-items-center justify-content-between">
+        <h2 class="h5 m-0">قائمة قواعد العمولة</h2>
+      </div>
+      <div id="tableContainer">
+        {% include "commission/rules_table.html" %}
+      </div>
+    </div>
+  </div>
+</div>

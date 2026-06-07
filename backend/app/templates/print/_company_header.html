@@ -1,0 +1,45 @@
+<div class="company-header">
+  <div class="header-top">
+    <div class="header-left"></div>
+    <div class="header-title">{{ settings.company_name }}</div>
+    <div class="header-right"></div>
+  </div>
+  <div class="header-sep"></div>
+  <div class="header-bottom">
+    <div class="company-info">
+      {% if settings.address %}
+        <div class="company-meta">{{ settings.address }}</div>
+      {% endif %}
+      {% if settings.phone %}
+        <div class="company-meta">{{ settings.phone }}</div>
+      {% endif %}
+      {% if show_legal_ids %}
+        <div class="company-meta">الرقم الضريبي: 667-526-285</div>
+        <div class="company-meta">السجل التجاري: 9842</div>
+      {% endif %}
+    </div>
+    <div class="company-logo">
+      {% set logo_src = settings.logo_url or settings.logo_path %}
+      {% if logo_src %}
+        <img src="{{ logo_src }}" alt="Logo" />
+      {% endif %}
+    </div>
+  </div>
+  {% if page_title or page_meta %}
+    <div class="header-sep"></div>
+    <div class="doc-block">
+      {% if page_title %}
+        <div class="doc-title">{{ page_title }}</div>
+      {% else %}
+        <div class="doc-title"></div>
+      {% endif %}
+      {% if page_meta %}
+        <div class="doc-meta">
+          {% for line in page_meta %}
+            <div>{{ line }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>

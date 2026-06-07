@@ -1,0 +1,42 @@
+﻿{% extends "base.html" %}
+
+{% block title %}الجرد{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h3 m-0">الجرد</h1>
+  <a class="btn btn-primary" href="/stocktake/new">جرد جديد</a>
+</div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="p-3">
+    <h2 class="h5 m-0">قائمة الجرد</h2>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width: 80px;">رقم</th>
+          <th>التاريخ</th>
+          <th>المخزن</th>
+          <th>الحالة</th>
+          <th style="width: 120px;" class="text-end">إجراء</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in stocktakes %}
+        <tr>
+          <td>{{ s.id }}</td>
+          <td>{{ s.date.strftime('%Y-%m-%d') if s.date else '-' }}</td>
+          <td>{{ s.location.name if s.location else '-' }}</td>
+          <td>{{ s.status }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="/stocktake/{{ s.id }}">عرض</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

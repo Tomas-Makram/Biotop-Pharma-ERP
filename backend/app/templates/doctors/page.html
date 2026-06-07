@@ -1,0 +1,25 @@
+﻿{% extends "base.html" %}
+
+{% block title %}الأطباء{% endblock %}
+
+{% block content %}
+<div class="row g-3 flex-lg-row-reverse">
+  <div class="col-12 col-lg-9">
+    <div id="doctorsSection">
+      {% include "doctors/sections/list.html" %}
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-3">
+    <div class="card p-3">
+      <h2 class="h6 mb-3">قائمة الأطباء</h2>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-primary" hx-get="/doctors/section/list" hx-target="#doctorsSection" hx-swap="innerHTML">تسجيل الأطباء</button>
+        <button class="btn btn-outline-primary" hx-get="/doctors/section/opening" hx-target="#doctorsSection" hx-swap="innerHTML">رصيد أول مدة</button>
+        <button class="btn btn-outline-primary" hx-get="/commission/rules" hx-target="#doctorsSection" hx-swap="innerHTML">قواعد عمولة الأطباء</button>
+        <button class="btn btn-outline-primary" hx-get="/doctors/section/reports" hx-target="#doctorsSection" hx-swap="innerHTML">تقارير</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

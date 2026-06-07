@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}تفاصيل التحويل{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h4 m-0">تفاصيل التحويل #{{ transfer.id }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="/transfers">رجوع</a>
+    <a class="btn btn-outline-primary" href="/transfers/{{ transfer.id }}/print" target="_blank">طباعة</a>
+  </div>
+</div>
+
+<div class="card p-4 mb-3">
+  <div class="row g-3">
+    <div class="col-12 col-md-4"><strong>التاريخ:</strong> {{ transfer.date.strftime('%Y-%m-%d') if transfer.date else '-' }}</div>
+    <div class="col-12 col-md-4"><strong>من:</strong> {{ transfer.from_location.name if transfer.from_location else '-' }}</div>
+    <div class="col-12 col-md-4"><strong>إلى:</strong> {{ transfer.to_location.name if transfer.to_location else '-' }}</div>
+    <div class="col-12 col-md-4"><strong>المندوب:</strong> {{ transfer.rep.name if transfer.rep else '-' }}</div>
+    <div class="col-12"><strong>ملاحظات:</strong> {{ transfer.notes or '-' }}</div>
+  </div>
+</div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>الصنف</th>
+          <th>الكمية المطلوبة</th>
+          <th>سعر البيع</th>
+          <th>العمولة</th>
+          <th>تفاصيل الأكواد</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in transfer.lines %}
+        <tr>
+          <td>{{ line.item.name if line.item else '-' }}</td>
+          <td>{{ line.requested_qty }}</td>
+          <td>{{ line.unit_price }}</td>
+          <td>{{ line.commission_amount }}</td>
+          <td>
+            <table class="table table-sm mb-0">
+              <thead>
+                <tr>
+                  <th>كود التشغيل</th>
+                  <th>الكمية</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for alloc in line.allocations %}
+                <tr>
+                  <td>{{ alloc.lot_code_snapshot }}</td>
+                  <td>{{ alloc.qty }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

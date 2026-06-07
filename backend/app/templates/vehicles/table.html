@@ -1,0 +1,36 @@
+﻿<div id="vehicles-table" data-total="{{ vehicles|length }}">
+  {% if vehicles|length == 0 %}
+    <div class="p-3">
+      <div class="alert alert-info mb-0">لا توجد بيانات للسيارات حتى الآن.</div>
+    </div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 80px;">ID</th>
+            <th>الاسم</th>
+            <th>رقم اللوحة</th>
+            <th>ملاحظات</th>
+            <th style="width: 110px;" class="text-end">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in vehicles %}
+          <tr>
+            <td>{{ v.id }}</td>
+            <td>{{ v.name }}</td>
+            <td>{{ v.plate_number or '-' }}</td>
+            <td>{{ v.notes or '-' }}</td>
+            <td class="text-end">
+              <button class="btn btn-danger btn-sm" hx-delete="/vehicles/{{ v.id }}" hx-target="#tableContainer" hx-confirm="هل أنت متأكد من الحذف؟">
+                حذف
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+</div>

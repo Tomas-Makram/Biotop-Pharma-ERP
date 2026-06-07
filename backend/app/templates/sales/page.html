@@ -1,0 +1,25 @@
+﻿{% extends "base.html" %}
+
+{% block title %}المبيعات{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-3">
+    <div class="card p-3 h-100">
+      <h2 class="h5 mb-3">قائمة المبيعات</h2>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-primary" hx-get="/sales/section/sales" hx-target="#salesSection" hx-swap="innerHTML">تسجيل مبيعات</button>
+        <button class="btn btn-outline-primary" hx-get="/sales/section/returns" hx-target="#salesSection" hx-swap="innerHTML">مردودات مبيعات</button>
+        <button class="btn btn-outline-primary" hx-get="/sales/section/orders" hx-target="#salesSection" hx-swap="innerHTML">أمر بيع</button>
+        <button class="btn btn-outline-primary" hx-get="/sales/section/opening" hx-target="#salesSection" hx-swap="innerHTML">رصيد أول مدة</button>
+        <button class="btn btn-outline-primary" hx-get="/sales/section/reports" hx-target="#salesSection" hx-swap="innerHTML">تقارير</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-9">
+    <div id="salesSection">
+      {% include "sales/sections/sales_list.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

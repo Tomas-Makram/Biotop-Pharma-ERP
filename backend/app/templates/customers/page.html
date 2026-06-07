@@ -1,0 +1,24 @@
+﻿{% extends "base.html" %}
+
+{% block title %}العملاء{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-3 no-print">
+    <div class="card p-3 h-100">
+      <h2 class="h5 mb-3">قائمة العملاء</h2>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-primary" hx-get="/customers/section/locations" hx-target="#customersSection" hx-swap="innerHTML">الجهات</button>
+        <button class="btn btn-outline-primary" hx-get="/customers/section/transfers" hx-target="#customersSection" hx-swap="innerHTML">التحويلات</button>
+        <button class="btn btn-outline-primary" hx-get="/customers/section/opening-balance" hx-target="#customersSection" hx-swap="innerHTML">رصيد أول المدة</button>
+        <button class="btn btn-outline-primary" hx-get="/customers/section/reports" hx-target="#customersSection" hx-swap="innerHTML">تقارير العملاء</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-9">
+    <div id="customersSection">
+      {% include "items/sections/locations.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

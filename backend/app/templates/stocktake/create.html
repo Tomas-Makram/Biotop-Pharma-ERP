@@ -1,0 +1,140 @@
+﻿{% extends "base.html" %}
+
+{% block title %}جرد جديد{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h3 m-0">جرد جديد</h1>
+  <a class="btn btn-outline-secondary" href="/stocktake">رجوع</a>
+</div>
+
+<form method="post" action="/stocktake/new" class="card p-4" id="stocktakeForm">
+  <div class="row g-3">
+    <div class="col-12 col-md-3">
+      <label class="form-label">التاريخ</label>
+      <input name="date" type="date" class="form-control" value="{{ today }}" />
+    </div>
+    <div class="col-12 col-md-4">
+      <label class="form-label">المخزن</label>
+      <select name="location_id" class="form-select" required>
+        <option value="">اختر</option>
+        {% for loc in locations %}
+          <option value="{{ loc.id }}">{{ loc.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12">
+      <label class="form-label">ملاحظات</label>
+      <input name="notes" class="form-control" />
+    </div>
+  </div>
+
+  <hr class="my-4" />
+
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <h2 class="h5 m-0">بنود الجرد</h2>
+    <button type="button" class="btn btn-outline-primary" id="addRow">إضافة سطر</button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle" id="itemsTable">
+      <thead class="table-light">
+        <tr>
+          <th>الصنف</th>
+          <th>رقم الباتش</th>
+          <th style="width: 160px;">الكمية الفعلية</th>
+          <th style="width: 80px;">حذف</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="text-end">
+    <button type="submit" class="btn btn-success">حفظ الجرد</button>
+  </div>
+
+  <div
+    id="stocktakeData"
+    class="d-none"
+    data-items='{{ items_json | e }}'
+    data-lots='{{ lots_json | e }}'
+  ></div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const form = document.getElementById('stocktakeForm');
+  const dataEl = document.getElementById('stocktakeData');
+  const items = JSON.parse(dataEl.dataset.items || '[]');
+  const lots = JSON.parse(dataEl.dataset.lots || '[]');
+  const tbody = document.querySelector('#itemsTable tbody');
+  const table = document.getElementById('itemsTable');
+
+  function addRow(focus = true) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <select name="item_id" class="form-select" required>
+          <option value="">اختر الصنف</option>
+          ${items.map(i => `<option value="${i.id}">${i.name}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select name="lot_id" class="form-select">
+          <option value="">بدون</option>
+          ${lots.map(l => `<option value="${l.id}">${l.lot_code}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <input name="counted_qty" class="form-control" type="number" step="0.01" value="0" />
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn btn-sm btn-danger">حذف</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+
+    if (focus) {
+      tr.querySelector('select').focus();
+    }
+  }
+
+  // زر إضافة سطر (اختياري)
+  document.getElementById('addRow').addEventListener('click', () => {
+    addRow(true);
+  });
+
+  // حذف سطر
+  tbody.addEventListener('click', (e) => {
+    if (e.target.matches('.btn-danger')) {
+      e.target.closest('tr').remove();
+      if (tbody.children.length === 0) addRow(true);
+    }
+  });
+
+  // ✅ منع الحفظ بالـ Enter في الفورم
+  form.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
+  });
+
+  // ✅ Enter داخل الجدول = إضافة سطر جديد
+  table.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+
+    const insideTable = e.target.closest('#itemsTable');
+    if (!insideTable) return;
+
+    e.preventDefault();
+    addRow(true);
+  }, true);
+
+  // أول سطر عند التحميل
+  if (tbody.children.length === 0) {
+    addRow(false);
+  }
+</script>
+{% endblock %}

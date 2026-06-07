@@ -1,0 +1,108 @@
+﻿<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <title>تقرير المبيعات حسب المنطقة</title>
+  <style>
+    .company-header { border: 1.5px solid #666; border-radius: 14px; padding: 10px 14px; margin-bottom: 16px; background: #f3f3f3; }
+    .company-header .header-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; }
+    .company-header .header-title { text-align: center; font-size: 18px; font-weight: 700; letter-spacing: 0.2px; }
+    .company-header .header-left { font-size: 12px; color: #333; }
+    .company-header .header-right { font-size: 12px; color: #333; text-align: end; }
+    .company-header .header-sep { border-top: 1px solid #888; margin: 8px 0; }
+    .company-header .header-bottom { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
+    .company-logo img { max-height: 50px; max-width: 120px; object-fit: contain; }
+    .company-info { text-align: center; }
+    .company-name { font-size: 16px; font-weight: 700; }
+    .company-meta { font-size: 11px; color: #444; }
+    .company-header .doc-block { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .company-header .doc-title { font-size: 16px; font-weight: 700; }
+    .company-header .doc-meta { font-size: 11px; color: #444; text-align: end; }
+    body { font-family: Tahoma, Arial, sans-serif; padding: 24px; direction: rtl; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th, td { border: 1px solid #999; padding: 6px 8px; font-size: 14px; }
+    th { background: #f2f2f2; }
+    .section-title { margin-top: 18px; font-size: 15px; font-weight: 700; }
+    .actions { margin-top: 12px; }
+    @media print { .actions { display: none; } }
+  </style>
+</head>
+<body>
+  {% set page_title = "تقرير المبيعات حسب المنطقة" %}
+  {% set page_meta = [
+    "تاريخ الطباعة: " ~ print_date,
+    "الفترة: " ~ (start_date or '-') ~ " إلى " ~ (end_date or '-')
+  ] %}
+  {% include "print/_company_header.html" %}
+
+  <div class="section-title">ترتيب المناطق</div>
+  <table>
+    <thead>
+      <tr>
+        <th>المنطقة</th>
+        <th>عدد الفواتير</th>
+        <th>إجمالي المبيعات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if region_rows|length == 0 %}
+      <tr>
+        <td colspan="3" class="text-center">لا توجد بيانات.</td>
+      </tr>
+      {% else %}
+        {% for row in region_rows %}
+        <tr>
+          <td>{{ row.region or 'غير محدد' }}</td>
+          <td>{{ row.count }}</td>
+          <td>{{ '%.2f'|format(row.total or 0) }}</td>
+        </tr>
+        {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+
+  {% if selected_region %}
+  <div class="section-title">تفاصيل منطقة: {{ selected_region }}</div>
+  <table>
+    <thead>
+      <tr>
+        <th>الجهة</th>
+        <th>النوع</th>
+        <th>عدد الفواتير</th>
+        <th>إجمالي المبيعات</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if location_rows|length == 0 %}
+      <tr>
+        <td colspan="4" class="text-center">لا توجد بيانات لهذه المنطقة.</td>
+      </tr>
+      {% else %}
+        {% for row in location_rows %}
+        <tr>
+          <td>{{ row.name }}</td>
+          <td>
+            {% if row.type == 'pharmacy' %}
+              صيدلية
+            {% elif row.type == 'warehouse' %}
+              مخزن
+            {% elif row.type == 'sub_warehouse' %}
+              مخزن فرعي
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>{{ row.count }}</td>
+          <td>{{ '%.2f'|format(row.total or 0) }}</td>
+        </tr>
+        {% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <div class="actions">
+    <button onclick="window.print()">طباعة</button>
+  </div>
+</body>
+</html>

@@ -1,0 +1,61 @@
+﻿{% extends "base.html" %}
+
+{% block title %}تفاصيل الجرد{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h4 m-0">جرد رقم #{{ stocktake.id }}</h1>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="/stocktake">رجوع</a>
+    <a class="btn btn-outline-primary" href="/stocktake/{{ stocktake.id }}/print" target="_blank">طباعة</a>
+    {% if stocktake.status != 'posted' %}
+      <form method="post" action="/stocktake/{{ stocktake.id }}/post">
+        <button class="btn btn-success">اعتماد الجرد</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card p-4 mb-3">
+  <div class="row g-3">
+    <div class="col-12 col-md-4"><strong>التاريخ:</strong> {{ stocktake.date.strftime('%Y-%m-%d') if stocktake.date else '-' }}</div>
+    <div class="col-12 col-md-4"><strong>المخزن:</strong> {{ stocktake.location.name if stocktake.location else '-' }}</div>
+    <div class="col-12 col-md-4"><strong>الحالة:</strong> {{ stocktake.status }}</div>
+    <div class="col-12"><strong>ملاحظات:</strong> {{ stocktake.notes or '-' }}</div>
+  </div>
+</div>
+
+<div class="card p-3 mb-3">
+  <div class="d-flex gap-3 flex-wrap">
+    <div class="badge bg-success">إجمالي الزيادة: {{ increase_total }}</div>
+    <div class="badge bg-danger">إجمالي العجز: {{ decrease_total }}</div>
+  </div>
+</div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>اسم الصنف</th>
+          <th>رصيد المخزن</th>
+          <th>الرصيد الواقعي</th>
+          <th>الزيادة</th>
+          <th>العجز</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for line in stocktake.lines %}
+        <tr>
+          <td>{{ line.item.name if line.item else '-' }}</td>
+          <td>{{ line.system_qty }}</td>
+          <td>{{ line.counted_qty }}</td>
+          <td>{% if line.diff_qty > 0 %}{{ line.diff_qty }}{% else %}-{% endif %}</td>
+          <td>{% if line.diff_qty < 0 %}{{ line.diff_qty | abs }}{% else %}-{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

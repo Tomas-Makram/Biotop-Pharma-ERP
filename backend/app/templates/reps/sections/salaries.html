@@ -1,0 +1,52 @@
+﻿<div class="card p-4 mb-3">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <h1 class="h4 m-0">المرتبات</h1>
+    <div class="muted">جدول مرتبات الشهر مع الإضافات والخصومات</div>
+  </div>
+
+  <hr class="my-4"/>
+
+  <form class="row g-3 align-items-end" hx-get="/reps/section/salaries" hx-target="#repsSection" hx-swap="innerHTML">
+    <div class="col-12 col-md-3">
+      <label class="form-label">الشهر</label>
+      <select name="month" class="form-select" required>
+        <option value="1" {% if selected_month == 1 %}selected{% endif %}>يناير</option>
+        <option value="2" {% if selected_month == 2 %}selected{% endif %}>فبراير</option>
+        <option value="3" {% if selected_month == 3 %}selected{% endif %}>مارس</option>
+        <option value="4" {% if selected_month == 4 %}selected{% endif %}>أبريل</option>
+        <option value="5" {% if selected_month == 5 %}selected{% endif %}>مايو</option>
+        <option value="6" {% if selected_month == 6 %}selected{% endif %}>يونيو</option>
+        <option value="7" {% if selected_month == 7 %}selected{% endif %}>يوليو</option>
+        <option value="8" {% if selected_month == 8 %}selected{% endif %}>أغسطس</option>
+        <option value="9" {% if selected_month == 9 %}selected{% endif %}>سبتمبر</option>
+        <option value="10" {% if selected_month == 10 %}selected{% endif %}>أكتوبر</option>
+        <option value="11" {% if selected_month == 11 %}selected{% endif %}>نوفمبر</option>
+        <option value="12" {% if selected_month == 12 %}selected{% endif %}>ديسمبر</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">السنة</label>
+      <input name="year" type="number" class="form-control" value="{{ selected_year }}" />
+    </div>
+    <div class="col-12 col-md-2 d-grid">
+      <button class="btn btn-outline-primary" type="submit">عرض</button>
+    </div>
+  </form>
+
+  <form class="row g-3 mt-3" hx-post="/reps/salaries/pay" hx-target="#tableContainer" hx-swap="innerHTML" data-alert-success="تم تسديد مرتبات الشهر" data-alert-fail="فشل تسديد المرتبات">
+    <input type="hidden" name="month" value="{{ selected_month }}">
+    <input type="hidden" name="year" value="{{ selected_year }}">
+    <div class="col-12 col-md-4 d-grid">
+      <button class="btn btn-success" type="submit">تسديد مرتبات الشهر</button>
+    </div>
+  </form>
+</div>
+
+<div class="card p-0 overflow-hidden">
+  <div class="p-3">
+    <h2 class="h5 m-0">بيانات المرتبات</h2>
+  </div>
+  <div id="tableContainer">
+    {% include "reps/salaries_table.html" %}
+  </div>
+</div>

@@ -1,0 +1,26 @@
+﻿{% extends "base.html" %}
+
+{% block title %}الخزنة{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  <div class="col-12 col-lg-3">
+    <div class="card p-3 h-100">
+      <h2 class="h5 mb-3">قائمة الخزنة</h2>
+      <div class="d-grid gap-2">
+        <button class="btn btn-outline-primary" hx-get="/treasury/section/transfer" hx-target="#treasurySection" hx-swap="innerHTML">تحويل بين الخزن</button>
+        <button class="btn btn-outline-primary" hx-get="/treasury/section/opening" hx-target="#treasurySection" hx-swap="innerHTML">رصيد أول مدة</button>
+        <button class="btn btn-outline-primary" hx-get="/treasury/section/collection" hx-target="#treasurySection" hx-swap="innerHTML">إذن استلام</button>
+        <button class="btn btn-outline-primary" hx-get="/treasury/section/payment" hx-target="#treasurySection" hx-swap="innerHTML">إذن دفع</button>
+        <button class="btn btn-outline-primary" hx-get="/treasury/section/doctor_payment" hx-target="#treasurySection" hx-swap="innerHTML">إذن دفع عمولة الأطباء</button>
+        <button class="btn btn-outline-primary" hx-get="/treasury/section/reports" hx-target="#treasurySection" hx-swap="innerHTML">تقارير الخزنة</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-9">
+    <div id="treasurySection">
+      {% include "treasury/sections/transfer.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

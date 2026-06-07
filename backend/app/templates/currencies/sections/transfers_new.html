@@ -1,0 +1,141 @@
+﻿<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h2 class="h4 m-0">تحويل جديد</h2>
+  <button class="btn btn-outline-secondary" hx-get="/currencies/section/transfers" hx-target="#currenciesSection" hx-swap="innerHTML">رجوع</button>
+</div>
+
+{% if errors %}
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      {% for err in errors %}
+        <li>{{ err }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+<form class="card p-4" hx-post="/transfers/new" hx-target="#currenciesSection" hx-swap="innerHTML">
+  <div class="row g-3">
+    <div class="col-12 col-md-3">
+      <label class="form-label">التاريخ</label>
+      <input name="date" type="date" class="form-control" value="{{ today }}" />
+    </div>
+    <div class="col-12 col-md-4">
+      <label class="form-label">من مخزن</label>
+      <select name="from_location_id" class="form-select" required>
+        <option value="">اختر</option>
+        {% for loc in locations %}
+          <option value="{{ loc.id }}">{{ loc.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-4">
+      <label class="form-label">إلى جهة</label>
+      <select name="to_location_id" class="form-select" required>
+        <option value="">اختر</option>
+        {% for loc in locations %}
+          <option value="{{ loc.id }}">{{ loc.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">المندوب</label>
+      <select name="rep_id" class="form-select">
+        <option value="">بدون</option>
+        {% for rep in reps %}
+          <option value="{{ rep.id }}">{{ rep.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-9">
+      <label class="form-label">ملاحظات</label>
+      <input name="notes" class="form-control" />
+    </div>
+
+    <div class="col-12">
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle" id="transferLines">
+          <thead class="table-light">
+            <tr>
+              <th>الصنف</th>
+              <th style="width: 130px;">الكمية</th>
+              <th style="width: 130px;">سعر الوحدة</th>
+              <th>الطبيب</th>
+              <th style="width: 80px;" class="text-center">إزالة</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button type="button" class="btn btn-outline-secondary" id="addTransferLine">إضافة سطر</button>
+    </div>
+
+    <div class="col-12 col-md-2 d-grid">
+      <button class="btn btn-success" type="submit">حفظ</button>
+    </div>
+  </div>
+</form>
+
+<script>
+  const itemsData = {{ items | tojson }};
+  const doctorsData = {{ doctors | tojson }};
+  const body = document.querySelector('#transferLines tbody');
+
+  function itemOptions() {
+    return ['<option value="">اختر الصنف</option>'].concat(
+      itemsData.map((i) => `<option value="${i.id}" data-price="${i.sale_price}">${i.name}</option>`)
+    ).join('');
+  }
+
+  function doctorOptions() {
+    return ['<option value="">بدون</option>'].concat(
+      doctorsData.map((d) => `<option value="${d.id}">${d.name}</option>`)
+    ).join('');
+  }
+
+  function addLine() {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>
+        <select name="item_id" class="form-select item-select" required>
+          ${itemOptions()}
+        </select>
+      </td>
+      <td>
+        <input name="requested_qty" class="form-control" type="number" step="0.01" min="0.01" required />
+      </td>
+      <td>
+        <input name="unit_price" class="form-control price-input" type="number" step="0.01" value="0" />
+      </td>
+      <td>
+        <select name="doctor_id" class="form-select">
+          ${doctorOptions()}
+        </select>
+      </td>
+      <td class="text-center">
+        <button type="button" class="btn btn-sm btn-outline-danger remove-line">حذف</button>
+      </td>
+    `;
+    body.appendChild(row);
+  }
+
+  document.getElementById('addTransferLine').addEventListener('click', addLine);
+  body.addEventListener('click', (e) => {
+    if (e.target.classList.contains('remove-line')) {
+      e.target.closest('tr').remove();
+    }
+  });
+
+  body.addEventListener('change', (e) => {
+    if (e.target.classList.contains('item-select')) {
+      const row = e.target.closest('tr');
+      const opt = e.target.selectedOptions[0];
+      if (opt && opt.dataset.price) {
+        row.querySelector('.price-input').value = opt.dataset.price;
+      }
+    }
+  });
+
+  if (body.children.length === 0) {
+    addLine();
+  }
+</script>

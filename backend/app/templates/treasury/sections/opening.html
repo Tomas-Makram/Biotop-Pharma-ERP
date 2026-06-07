@@ -1,0 +1,41 @@
+﻿<div class="card p-4">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <h1 class="h4 m-0">رصيد أول مدة للخزن</h1>
+    <div class="muted">إدخال الرصيد الافتتاحي لكل خزنة</div>
+  </div>
+
+  <hr class="my-4"/>
+
+  <form class="row g-3 align-items-end" hx-post="/treasury/opening" hx-target="#openingTableContainer" hx-swap="innerHTML" data-alert-success="تم حفظ الرصيد الافتتاحي" data-alert-fail="تعذر حفظ الرصيد الافتتاحي">
+    <div class="col-12 col-md-6">
+      <label class="form-label">الخزنة</label>
+      <select name="account_id" class="form-select" required>
+        <option value="">اختر الخزنة</option>
+        {% for acc in accounts %}
+          <option value="{{ acc.id }}">{{ acc.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">الرصيد الافتتاحي</label>
+      <input name="amount" type="number" step="0.01" class="form-control" />
+    </div>
+    <div class="col-12 col-md-3">
+      <label class="form-label">التاريخ</label>
+      <input name="date" type="date" class="form-control" value="{{ today }}" />
+    </div>
+    <div class="col-12 col-md-2 d-grid">
+      <button class="btn btn-success" type="submit">حفظ</button>
+    </div>
+  </form>
+</div>
+
+<div class="card p-0 overflow-hidden mt-3">
+  <div class="p-3 d-flex align-items-center justify-content-between">
+    <h2 class="h5 m-0">أرصدة افتتاحية للخزن</h2>
+    <div class="muted">الإجمالي: <span data-total-count>{{ accounts|length }}</span></div>
+  </div>
+  <div id="openingTableContainer">
+    {% include "treasury/opening_table.html" %}
+  </div>
+</div>
