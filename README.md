@@ -1,6 +1,6 @@
 # 🧬 Biotop Pharma ERP
 
-![Biotop Pharma](backend/WhatsApp Image 2026-01-27 at 3.28.30 PM.jpeg)
+![Biotop Pharma](backend/WhatsApp%20Image%202026-01-27%20at%203.28.30%20PM.jpeg)
 
 ## Overview
 
