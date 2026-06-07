@@ -1,6 +1,6 @@
 # 🧬 Biotop Pharma ERP
 
-![Biotop Pharma](logo.png)
+![Biotop Pharma](WhatsApp Image 2026-01-27 at 3.28.30 PM.jpeg)
 
 ## Overview
 
